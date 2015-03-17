@@ -3,4 +3,52 @@
 PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-config.dtd">
 
-<-- This is where our sql will go -->
+<sqlMap namespace="ams">
+
+<!-- for every table(and consequently every class we made for the tables) we need to create a resultmap.  A resultmap binds the elements from our classes and the tables so that we can use the setters and getters from those classes. -->
+<!-- make sure the name you set for 'class' is the exact name you made for the java class -->
+<resultMap id="item" class="Item">
+	<result property="upc" column="upc"/>
+	<result property="itemTitle" column="itemTitle"/>
+	<result property="type" column="type"/>
+	<result property="category" column="category"/>
+	<result property="company" column="company"/>
+	<result property="year" column="year"/>
+	<result property="price" column="price"/>
+	<result property="stock" column="stock"/>
+</resultMap>
+
+<resultMap id="order" class="Order">
+	<result property="receiptId" column="receiptId"/>
+	<result property="date" column="date"/>
+	<result property="cid" column="cid"/>
+	<result property="card#" column="card#"/>
+	<result property="expiryDate" column="expiryDate"/>
+	<result property="expectedDate" column="expectedDate"/>
+	<result property="deliveredDate" column="deliveredDate"/>
+</resultMap>
+
+
+<!-- add your result maps here -->
+
+<!-- end Resultmaps section -->
+
+
+<!-- Start of the sql statements -->
+
+<!-- for every insert, select and update, ensure to create a unique id for the statement(follow format below) -->
+
+<insert id="insertItem">
+	insert into Item 
+		values (#{upc}, #{itemTitle}, #{type}, #{category}, #{company}, #{year}, #{price}, #{stock})
+</insert>
+
+<insert id="insertOrder">
+	insert into Order
+		values (#{receiptId}, #{date}, #{cid}, #{card#}, #{expireDate}, #{expectedDate}, #{deliveredDate})
+</insert>
+
+<!-- put the rest of your sql statements here. -->
+
+
+</sqlmap>
