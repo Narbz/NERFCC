@@ -10,8 +10,8 @@ public class HasSong extends Record
     
     public HasSong(String upc, String stitle)
     {
-        this.upc = upc;
-        songTitle = stitle;
+        setUPC(upc);
+        setSongTitle(stitle);
     }
     
     public String getUPC()
@@ -29,7 +29,7 @@ public class HasSong extends Record
         upc = newUPC;
     }
     
-    public void setSingerName(String newTitle)
+    public void setSongTitle(String newTitle)
     {
         songTitle = newTitle;
     }

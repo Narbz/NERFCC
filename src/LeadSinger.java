@@ -10,8 +10,8 @@ public class LeadSinger extends Record
     
     public LeadSinger(String upc, String sname)
     {
-        this.upc = upc;
-        singerName = sname;
+        setUPC(upc);
+        setSingerName(sname);
     }
     
     public String getUPC()
