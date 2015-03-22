@@ -48,6 +48,36 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 		values (#{receiptId}, #{date}, #{cid}, #{card#}, #{expireDate}, #{expectedDate}, #{deliveredDate})
 </insert>
 
+<insert id="insertCustomer">
+	insert into Customer
+		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone})
+</insert>
+
+<insert id="insertHasSong">
+	insert into HasSong
+		values (#{upc}, #{songTitle})
+</insert>
+
+<insert id="insertLeadSinger">
+	insert into LeadSinger
+		values (#{upc}, #{singerName})
+</insert>
+
+<insert id="insertPurchaseItem">
+	insert into PurchaseItem
+		values (#{recieptId}, #{upc}, #{quantity})
+</insert>
+
+<insert id="insertReturn">
+	insert into Return
+		values (#{retid}, #{date}, #{receiptId})
+</insert>
+
+<insert id="insertReturnItem">
+	insert into ReturnItem
+		values (#{retid} #{upc}, #{quantity})
+</insert>
+
 <!-- put the rest of your sql statements here. -->
 
 
