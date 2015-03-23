@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration
-PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="ams">
+<mapper namespace="ams">
 
 <!-- for every table(and consequently every class we made for the tables) we need to create a resultmap.  A resultmap binds the elements from our classes and the tables so that we can use the setters and getters from those classes. -->
 <!-- make sure the name you set for 'class' is the exact name you made for the java class -->
-<resultMap id="item" class="Item">
+<resultMap id="item" type="Item">
 	<result property="upc" column="upc"/>
 	<result property="itemTitle" column="itemTitle"/>
 	<result property="type" column="type"/>
@@ -18,7 +18,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 	<result property="stock" column="stock"/>
 </resultMap>
 
-<resultMap id="order" class="Order">
+<resultMap id="order" type="Order">
 	<result property="receiptId" column="receiptId"/>
 	<result property="date" column="date"/>
 	<result property="cid" column="cid"/>
@@ -50,7 +50,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 
 <insert id="insertCustomer">
 	insert into Customer
-		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone})
+		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone});
 </insert>
 
 <insert id="insertHasSong">
@@ -81,4 +81,4 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 <!-- put the rest of your sql statements here. -->
 
 
-</sqlmap>
+</mapper>
