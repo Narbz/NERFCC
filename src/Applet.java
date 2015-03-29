@@ -15,13 +15,62 @@ public class Applet
     
     //**STATE REPRESENTATIONS**!!**
     private int state;
+    
+    //**INITIAL STATES!!!
     private final int INITIAL       = 0;
     private final int LOGIN         = 1;
     private final int REGISTER      = 2;
+    
+    //**CLERK STATES!!!
+    private final int CLERKSTART    = 3;
+    private final int PROCESSRETURN = 4;
+    private final int RETURNITEMS   = 5;
+    private final int RETURNCONFIRM = 6;
+    private final int RETURNFAILURE = 7;
+    
+    //**MANAGER STATES!!!
     private final int MGRSTART      = 10;
-    private final int CLERKSTART    = 40;
-    private final int CUSTSTART     = 70;
+    private final int ADDITEMS      = 11;
+    private final int ADDSUCCESS    = 12;
+    private final int ADDFAILURE    = 13;
+    private final int PROCDELIVERY  = 21;
+    private final int PROCSUCCESS   = 22;
+    private final int PROCFAILURE   = 23;
+    private final int DSIRINIT      = 31;
+    private final int DSRSUCCESS    = 32;
+    private final int DSRFAILURE    = 33;
+    private final int NTSRINIT      = 41;
+    private final int NTSRSUCCESS   = 42;
+    private final int NTSRFAILURE   = 43;
+    
+    //**CUSTOMER STATES
+    private final int CUSTSTART     = 50;
+    private final int SEARCHSTATE   = 51;
+    private final int SELECTITEM    = 52;
+    private final int CHECKQTY      = 53;
+    private final int INSFSTOCK     = 54;
+    private final int SEARCHFAILED  = 55;
+    private final int ADDTOVSB      = 61;
+    private final int VSBSUCCESS    = 62;
+    private final int VSBFAILURE    = 63;
+    private final int VIEWVSB       = 64;
+    private final int CLEARVSB      = 65;
+    private final int PLACEORDER    = 70;
+    private final int CONFIRMORDER  = 71;
+    private final int PAYFORORDER   = 72;
+    private final int ORDERFINAL    = 73;
+    private final int RECEIPT       = 74;
+    private final int PRDERFAIL     = 75;
+    
+    
+    
+    
+    
+    
+    //**OTHER STATES
     private final int EXIT          = 666;
+    
+    private final int PREVSTATE     = 999;
 
     /**
      * Constructor for objects of class Applet
@@ -30,13 +79,18 @@ public class Applet
     {
         msgout = new MessageHandler();
         reader = new InputReader();
-        state = 0;
+        setState(INITIAL);
         start();
     }
     
     /**
      * Main loop method. This method contains the logical flow of the 
      * program. The order of messages and inputs are determined here.
+     * Basically, this method will work using a simple while loop. First, 
+     * it will check (through al lpossible states) for the given state, the n
+     * print out messages and receive responses from the directions of the state.
+     * At the end of each state, there is a setState() function which will 
+     * determine the next state. Note that this may be teh same state as before.
      * @author Chazz Young
      */
     public void start()
@@ -78,9 +132,66 @@ public class Applet
                         //print error message, invalid user type
                     }
                 }
-            }else if(state == REGISTER){
-                
-            }else if(state == EXIT){
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+//             
+//         }else if(state == ){
+            
                 printToScreen(msgout.printExit());
                 fin = true;
             }else{
