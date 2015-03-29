@@ -20,6 +20,7 @@ public class Applet
     private final int INITIAL       = 0;
     private final int LOGIN         = 1;
     private final int REGISTER      = 2;
+    private final int INVOP         = 3;
     
     //**CLERK STATES!!!
     private final int CLERKSTART    = 3;
@@ -71,6 +72,10 @@ public class Applet
     private final int EXIT          = 666;
     
     private final int PREVSTATE     = 999;
+    
+    //** SYSTEM VARIABLES!
+    private final boolean y = true; 
+    private final boolean n = false;
 
     /**
      * Constructor for objects of class Applet
@@ -100,7 +105,7 @@ public class Applet
         //**MAIN LOOP***
         while(!fin){
             String input = getInput();
-            if(state == INITIAL){ //or state = 0
+            if(state == INITIAL){/**@author Chazz*/
                 printToScreen(msgout.printWelcome());
                 if(input.startsWith("yes")){
                     setState(LOGIN);
@@ -132,66 +137,209 @@ public class Applet
                         //print error message, invalid user type
                     }
                 }
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
-//             
-//         }else if(state == ){
+            }else if(state == REGISTER){/**@author Narbeh */
+                printToScreen("  You’re only a few steps away from creating your AMS account!");  
+                printToScreen("  Firstly, please enter your first and last name:");
+                String name = getInput();
+                /*printToScreen("  Please enter your username: ");
+                String username = getInput();*/ //done later 
+                printToScreen("  Please enter your address: ");
+                String address = getInput();
+                printToScreen("  Please enter your city of residence: ");
+                String city = getInput();
+                printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
+                String phonenum = getInput();
+                //TODO make a validate phone number check
+                boolean b = false;
+                while(b = true/*improperPhoneNumber*/){
+                    printToScreen("  The phone number you enter is not a valid phone number.");  
+                    printToScreen("  A valid number consists of digits 0-9 i.e 123-456-7891.");  
+                    printToScreen("  Please re-enter your phone number: (xxx-xxx-xxxx)");
+                    phonenum = getInput();
+                }
+                printToScreen("  Please enter your username that you will use to log in: ");
+                String username = getInput();
+                //TODO sql query to check if user name already exists
+                while(b = true /*userNameExists*/){ 
+                    printToScreen("  Sorry, that username is already taken. Please enter another: ");
+                    username = getInput();
+                }
+                printToScreen("  Please enter your password: ");
+                String password = getInput();
+                printToScreen("  Please review your information to ensure it is correct.");
+                printToScreen("  If amendments need to be made please enter the number corresponding");
+                printToScreen("  to the field you would like to edit. Enter fin if you are satisfie");
+                String toEdit = getInput();
+                //<system displays fields enter by user in a numbered list format>
+                /*boolean fin = false;
+                if(true/*user enters fin){
+                    fin = true;
+                }
+                while(!fin){
+                    <user enters field number>
+                    getFieldName + prevEnteredField
+                    printToScreen(" please enter the new information: ");
+                    <user enters new information>
+                    printToScreen("  Do you want to make any more changes" Enter fin if"); 
+                    printToScreen("  satisfied, otherwise enter N if you have further edits to make");
+                    if(user entered fin)
+                    fin = true
+                }*/
+                setState(CUSTSTART);
+                 
+            }else if(state == INVOP){
+                
+            }else if(state == CLERKSTART){
+                
+            }else if(state == PROCESSRETURN){/**@author Chazz */
+                printToScreen("  You have chosen to process a return.");
+                printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
+                String rid = getInput();
+                //<query database for valid receipt id and whether or not items can be returned>
+                boolean canReturn = true;//<aboveanswer;
+                if(canReturn){
+                    printToScreen("  The items for this receipt number can be returned.");
+                    printToScreen("  Here are the items on the receipt:");
+                    //<print enumerated list of items>
+                    setState(RETURNITEMS);
+                }else{
+                    printToScreen("  The items in this receipt cannot be returned because");
+                    printToScreen("  it either doesn't exist or it is over 15 days old");
+                    setState(CLERKSTART);
+                }
+            }else if(state == RETURNCONFIRM){/**@author Chazz */
+                printToScreen("  Attempting to process the return for the given items…");
+                //<add items to return table, remove from order???>
+                boolean success = true;//above
+                if(success){
+                	printToScreen("  The return order has been processed successfully.");
+                	//<print amount to return>
+                }else{
+                	printToScreen("The database has failed to process the return order."); 
+                }
+                setState(CLERKSTART);
+            }else if(state == MGRSTART){
+                
+            }else if(state == ADDITEMS){/**@author Narbeh*/
+                printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
+                String upc = getInput();
+                printToScreen("  Please enter the quantity: ");
+                int qty = Integer.parseInt(getInput());
+                //Check to ensure that this parses correctly
+                if(true/*isExistUPC*/){
+                	//execute updateItemStock
+                }else{//this means the item is a new one
+                    printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
+                    printToScreen("  Would you like to add it to the inventory? Y/N");
+                    boolean addToInv = yesno(getInput());
+                    if(addToInv){
+                		printToScreen("  Please enter the TITLE of the item: ");
+                		String itemTitle = getInput();
+                		printToScreen("  Please enter the TYPE of the item: ");
+                		String type = getInput();
+                		printToScreen("  Please enter the CATEGORY of the item: ");
+                		String category = getInput();
+                		//Check to ensure it is a particular type? Perhaps enum?
+
+                		printToScreen("  Please enter the COMPANY the item came from:  ");
+                		String company = getInput();
+                		printToScreen("  Please enter the selling PRICE: ");
+                		double price = Double.parseDouble(getInput());
+                		//Check to ensure that it is parsed correctly
+                		printToScreen("  Please enter the YEAR the item was created: ");
+                		int year = Integer.parseInt(getInput());
+                    }
+                		
+                    
+                }
+                printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
+                //<print off information>
+                boolean done = yesno(getInput());
+                /*
+                while(!done){
+                	<user enters field number>
+                	getFieldName + prevEnteredField
+                	" please enter the new information: "
+                	<user enters new information>
+                	"  do you want to make any more changes? Y/N"
+                	if(user entered Y){
+                		done= true;
+                    }
+                }
+                    */
+                setState(MGRSTART);
+            }else if(state == ADDSUCCESS){
+                
+            }else if(state == ADDFAILURE){
+                
+            }else if(state == PROCDELIVERY){
+                printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
+            	String receiptID = getInput();
+            	boolean isReceiptIDValid;
+            	if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
+            		isReceiptIDValid = false;
+                }else{
+                    isReceiptIDValid = true;
+                }
+            	while(!isReceiptIDValid){
+            	    printToScreen("  Invalid receiptId entered. ");
+            	    printToScreen("Please enter the ReceiptID of the order you wish to update: ");
+            		receiptID = getInput();
+                }
+                printToScreen("  Has this order been shipped? Y/N");
+                boolean wasUpdated = yesno(getInput());
+            	if(wasUpdated){
+            		//<execute updateOrderDate>
+                }else{
+            		printToScreen("  Order not updated");	
+                }
             
+                printToScreen("  Would you like to update another? Y/N");
+                boolean another = yesno(getInput());
+            	if(another){
+            	   setState(PROCDELIVERY);
+                }else{
+                	setState(MGRSTART);
+                }
+            }/*else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                
+            }else if(state == ){
+                */
+            else if(state == EXIT){
                 printToScreen(msgout.printExit());
                 fin = true;
             }else{
@@ -241,7 +389,27 @@ public class Applet
         state = newState;
     }
     
-    
+    /**
+     * Helper method to assist with the Y/N queries ade by the system. 
+     * @param yn = getInput9)
+     * @return true if the user inputs 'y' or 'Y', false if user enters 'n' or 'N', 
+     * and asks for a valid version if it is not one of the above characters
+     * @author Chazz Young
+     */
+    private boolean yesno(String yn)
+    {
+        boolean done = false;
+        while(!done){
+            if(yn.toUpperCase().equals("Y")){
+                return true;
+            }else if(yn.toUpperCase().equals("N")){
+                return false;
+            }else{
+                printToScreen("  This is not a valid choice. Please enter 'y' or 'n'");
+            }
+        }
+        return done;
+    }
     
     public static void main(String[] args){
         new Applet();
