@@ -28,6 +28,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<result property="deliveredDate" column="deliveredDate"/>
 </resultMap>
 
+<resultMap id="leadSinger" type="LeadSinger">
+	<result property="upc" column="upc">
+        <result property="singerName" column="singerName">
+</resultMap>
+
+<resultMap id="hasSong" type="HasSong">
+	<result property="upc" column="upc">
+        <result property="songTitle" column="songTitle">
+</resultMap>
+
+<resultMap id="customer" type="LeadSinger">
+	<result property="cid" column="cid">
+        <result property="customerName" column="customerName">
+	<result property="password" column="password">
+	<result property="address" column="address">
+	<result property="phone" column="phone">
+</resultMap>
+
+<resultMap id="purchaseItem" type="PurchaseItem">
+	<result property="receiptID" column="receiptId">
+	<result property="upc" column="upc">
+        <result property="quantity" column="quantity">
+</resultMap>
+
+<resultMap id="record" type="Record">
+	<result property="id" column="id">
+</resultMap>
+
+
 
 <!-- add your result maps here -->
 
