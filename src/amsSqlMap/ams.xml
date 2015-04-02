@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration
-PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<sqlMap namespace="ams">
+<mapper namespace="ams">
 
 <!-- for every table(and consequently every class we made for the tables) we need to create a resultmap.  A resultmap binds the elements from our classes and the tables so that we can use the setters and getters from those classes. -->
 <!-- make sure the name you set for 'class' is the exact name you made for the java class -->
-<resultMap id="item" class="Item">
+<resultMap id="item" type="Item">
 	<result property="upc" column="upc"/>
 	<result property="itemTitle" column="itemTitle"/>
 	<result property="type" column="type"/>
@@ -18,7 +18,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 	<result property="stock" column="stock"/>
 </resultMap>
 
-<resultMap id="order" class="Order">
+<resultMap id="order" type="Order">
 	<result property="receiptId" column="receiptId"/>
 	<result property="date" column="date"/>
 	<result property="cid" column="cid"/>
@@ -38,8 +38,10 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 
 <!-- for every insert, select and update, ensure to create a unique id for the statement(follow format below) -->
 
+<!-- Insert Statements-->
+
 <insert id="insertItem">
-	insert into Item 
+	insert into Item
 		values (#{upc}, #{itemTitle}, #{type}, #{category}, #{company}, #{year}, #{price}, #{stock})
 </insert>
 
@@ -50,7 +52,7 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 
 <insert id="insertCustomer">
 	insert into Customer
-		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone})
+		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone});
 </insert>
 
 <insert id="insertHasSong">
@@ -78,7 +80,89 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 		values (#{retid} #{upc}, #{quantity})
 </insert>
 
-<!-- put the rest of your sql statements here. -->
+<!-- Select Statements. -->
+<select id="selectCustomer">
+	SELECT Customer.cid
+	FROM Customer
+	WHERE cid = #{cid}
+</select>
 
+<select id="selectCustomerLogin">
+	SELECT Customer.cid
+	FROM Customer
+	WHERE Customer.cid = #{cid} AND Customer.password = #{password}
+</select>
 
-</sqlmap>
+<select id="selectReceiptToVerifyDate">
+	SELECT Orders.receiptID
+	FROM Orders where Orders.receiptID = #{receiptID} AND getDate()
+	BETWEEN Orders.date AND DATEADD(dd, 15, Orders.date)
+</select>
+
+<select id="selectItemStock">
+	SELECT Item.stock
+	FROM Item I
+	WHERE I.upc = #{upc}
+</select>
+
+<select id="selectDailySalesReport">
+	WITH temp(upc, category, price, quantity, receiptId) AS
+	(
+	SELECT Item.upc, Item.category, Item.price, SUM(PurchaseItem.quantity), PurchaseItem.receiptId
+	FROM Item inner join PurchaseItem
+	ON Item.upc=PurchaseItem.upc
+	GROUP BY PuchaseItem.upc
+	),
+	temp2(upc, category, price, quantity, orderDate) AS
+	(
+	SELECT temp.upc, temp.category, Item.price, temp.quantity, Order.date
+	FROM Orders inner join temp
+	ON Orders.receiptId=temp.receiptId
+	)
+	SELECT temp2.upc, temp2.category, temp2.price, temp2.quantity, (temp2.price*temp2.quantity) as total
+	FROM temp2
+	WHERE temp2.date=#{date}
+</select>
+
+<select id="selectTopNItems">
+	WITH temp( itemTitle, company, stock, quantity, receiptId) AS
+	(
+	SELECT Item.itemTitle, Item.company, Item.stock, SUM(PurchaseItem.quantity), PurchaseItem.receiptId
+	FROM Item inner join PurchaseItem
+	ON Item.upc=PurchaseItem.upc
+	GROUP BY PuchaseItem.upc
+	),
+	temp2(itemTile, company, stock, quantity, orderDate) AS
+	(
+	SELECT  temp.itemTitle, temp.company, temp.stock, temp.quantity, Order.date
+	FROM Orders inner join temp
+	ON Orders.receiptId=temp.receiptId
+	)
+	    SELECT top #{n} temp2.itemTitle, temp2.category, temp2.stock, temp2.quantity
+	FROM temp2
+	where temp2.orderDate = #{date}
+	ORDER BY temp2.quantity
+</select>
+
+<select id="selectItem">
+	SELECT *
+	FROM (SELECT *
+		  FROM Item I INNER JOIN LeadSinger S
+		  ON I.upc = S.upc)
+	WHERE category = #{category} OR title = #{title} OR name = #{name}
+</select>
+
+<!--Update Statements-->
+<update id="updateItemStock">
+	UPDATE Item
+	SET stock = #{stock}
+	WHERE upc = #{upc}
+</update>
+
+<update id="updateOrderDate">
+	UPDATE Orders
+	SET expectedDate = #{expectedDate}
+	WHERE receiptID = #{receiptID}
+</update>
+
+</mapper>
