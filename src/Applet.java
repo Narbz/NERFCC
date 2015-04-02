@@ -107,6 +107,7 @@ public class Applet
             String input = getInput();
             if(state == INITIAL){/**@author Chazz*/
                 printToScreen(msgout.printWelcome());
+                boolean hasVisited = yesno(getInput(1));
                 if(input.startsWith("yes")){
                     setState(LOGIN);
                 }else if(input.startsWith("no")){
@@ -116,9 +117,9 @@ public class Applet
                 }
             }else if(state == LOGIN){
                 printToScreen("  Please enter your username.");
-                String username = getInput();
+                String username = getInput(50);
                 printToScreen("  Please enter your password.");
-                String password = getInput();
+                String password = getInput(40);
                 
                 //Method to retrieve username from SQL database 
                 //Assume an id and type is returned
@@ -127,6 +128,7 @@ public class Applet
                    setState(LOGIN);
                 }else{
                     //Print successful login message
+                    printToScreen("  Welcome " + username + "!");
                     if(true/* c.type == MANAGER*/){
                         setState(MGRSTART);
                     }else if(true/*c.type == CLERK*/){
@@ -140,32 +142,30 @@ public class Applet
             }else if(state == REGISTER){/**@author Narbeh */
                 printToScreen("  You’re only a few steps away from creating your AMS account!");  
                 printToScreen("  Firstly, please enter your first and last name:");
-                String name = getInput();
-                /*printToScreen("  Please enter your username: ");
-                String username = getInput();*/ //done later 
+                String name = getInput(40);
                 printToScreen("  Please enter your address: ");
-                String address = getInput();
+                String address = getInput(40);
                 printToScreen("  Please enter your city of residence: ");
-                String city = getInput();
+                String city = getInput(40);
                 printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
-                String phonenum = getInput();
+                String phonenum = getInput(12);
                 //TODO make a validate phone number check
                 boolean b = false;
                 while(b = true/*improperPhoneNumber*/){
                     printToScreen("  The phone number you enter is not a valid phone number.");  
                     printToScreen("  A valid number consists of digits 0-9 i.e 123-456-7891.");  
                     printToScreen("  Please re-enter your phone number: (xxx-xxx-xxxx)");
-                    phonenum = getInput();
+                    phonenum = getInput(12);
                 }
                 printToScreen("  Please enter your username that you will use to log in: ");
-                String username = getInput();
+                String username = getInput(50);
                 //TODO sql query to check if user name already exists
                 while(b = true /*userNameExists*/){ 
                     printToScreen("  Sorry, that username is already taken. Please enter another: ");
-                    username = getInput();
+                    username = getInput(50);
                 }
                 printToScreen("  Please enter your password: ");
-                String password = getInput();
+                String password = getInput(40);/*
                 printToScreen("  Please review your information to ensure it is correct.");
                 printToScreen("  If amendments need to be made please enter the number corresponding");
                 printToScreen("  to the field you would like to edit. Enter fin if you are satisfie");
@@ -207,22 +207,26 @@ public class Applet
                     printToScreen("  it either doesn't exist or it is over 15 days old");
                     setState(CLERKSTART);
                 }
+            }else if(state == RETURNITEMS){
+            
             }else if(state == RETURNCONFIRM){/**@author Chazz */
                 printToScreen("  Attempting to process the return for the given items…");
-                //<add items to return table, remove from order???>
+                //<add items to return, returnItem table, increase quantity>
                 boolean success = true;//above
                 if(success){
                 	printToScreen("  The return order has been processed successfully.");
-                	//<print amount to return>
+                	//<calculate amount to return>
+                	printToScreen("  <amount> has been refunded to the Customer");
                 }else{
-                	printToScreen("The database has failed to process the return order."); 
+                	printToScreen("  The database has failed to process the return order."); 
+                	//Print the amo
                 }
                 setState(CLERKSTART);
             }else if(state == MGRSTART){
                 
             }else if(state == ADDITEMS){/**@author Narbeh*/
                 printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
-                String upc = getInput();
+                String upc = getInput(12);
                 printToScreen("  Please enter the quantity: ");
                 int qty = Integer.parseInt(getInput());
                 //Check to ensure that this parses correctly
@@ -231,31 +235,30 @@ public class Applet
                 }else{//this means the item is a new one
                     printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
                     printToScreen("  Would you like to add it to the inventory? Y/N");
-                    boolean addToInv = yesno(getInput());
+                    boolean addToInv = yesno(getInput(1));
                     if(addToInv){
                 		printToScreen("  Please enter the TITLE of the item: ");
-                		String itemTitle = getInput();
+                		String itemTitle = getInput(40);
                 		printToScreen("  Please enter the TYPE of the item: ");
-                		String type = getInput();
+                		String type = getInput(3);
                 		printToScreen("  Please enter the CATEGORY of the item: ");
-                		String category = getInput();
+                		String category = getInput(10);
                 		//Check to ensure it is a particular type? Perhaps enum?
 
                 		printToScreen("  Please enter the COMPANY the item came from:  ");
-                		String company = getInput();
+                		String company = getInput(20);
                 		printToScreen("  Please enter the selling PRICE: ");
                 		double price = Double.parseDouble(getInput());
                 		//Check to ensure that it is parsed correctly
                 		printToScreen("  Please enter the YEAR the item was created: ");
-                		int year = Integer.parseInt(getInput());
+                		int year = Integer.parseInt(getInput(4));
                     }
                 		
                     
                 }
-                printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
+                /*printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
                 //<print off information>
                 boolean done = yesno(getInput());
-                /*
                 while(!done){
                 	<user enters field number>
                 	getFieldName + prevEnteredField
@@ -287,7 +290,7 @@ public class Applet
             		receiptID = getInput();
                 }
                 printToScreen("  Has this order been shipped? Y/N");
-                boolean wasUpdated = yesno(getInput());
+                boolean wasUpdated = yesno(getInput(1));
             	if(wasUpdated){
             		//<execute updateOrderDate>
                 }else{
@@ -295,7 +298,7 @@ public class Applet
                 }
             
                 printToScreen("  Would you like to update another? Y/N");
-                boolean another = yesno(getInput());
+                boolean another = yesno(getInput(1));
             	if(another){
             	   setState(PROCDELIVERY);
                 }else{
@@ -384,6 +387,21 @@ public class Applet
         return reader.getInput().trim();
     }
     
+    /**
+     * Pverloaded method to retrieve a String with a defined max length
+     * @param max the max length
+     * @return a String of length <= n
+     * @author Chazz Young
+     */
+    public String getInput(int maxLength)
+    {
+        String input = getInput();
+        if(input.length() > maxLength){
+            return input.substring(0, maxLength);
+        }//else
+        return input;
+    }
+    
     private void setState(int newState)
     {
         state = newState;
@@ -404,7 +422,7 @@ public class Applet
                 return true;
             }else if(yn.toUpperCase().equals("N")){
                 return false;
-            }else{
+            }else{//Invalid response
                 printToScreen("  This is not a valid choice. Please enter 'y' or 'n'");
             }
         }
