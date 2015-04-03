@@ -50,16 +50,14 @@ public class Applet
     private final int INSFSTOCK     = 54;
     private final int SEARCHFAILED  = 55;
     private final int ADDTOVSB      = 61;
-    private final int VSBSUCCESS    = 62;
-    private final int VSBFAILURE    = 63;
     private final int VIEWVSB       = 64;
     private final int CLEARVSB      = 65;
     private final int PLACEORDER    = 70;
-    private final int CONFIRMORDER  = 71;
+    private final int CHECKQTYFINAL = 71;
     private final int PAYFORORDER   = 72;
     private final int ORDERFINAL    = 73;
     private final int RECEIPT       = 74;
-    private final int PRDERFAIL     = 75;
+    private final int ORDERFAIL     = 75;
     
     
     
@@ -68,12 +66,6 @@ public class Applet
     
     //**OTHER STATES
     private final int EXIT          = 666;
-    
-    private final int PREVSTATE     = 999;
-    
-    //** SYSTEM VARIABLES!
-    private final boolean y = true; 
-    private final boolean n = false;
 
     /**
      * Constructor for objects of class Applet
@@ -185,11 +177,11 @@ public class Applet
                 printToScreen("  If you wish to log out, please enter 'q'");
                 String choice = getInput(1);
                 if(choice.toLowerCase().equals("r")){
-                setState(RETURNITEMS);	
+                setState(RETURNITEMS);  
                 }else if(choice.toLowerCase().equals("q")){
-                	setState(INITIAL);
+                    setState(INITIAL);
                 }else{//do nothing
-                	printToScreen("  This is not a valid operation.");
+                    printToScreen("  This is not a valid operation.");
                 }
             }else if(state == PROCESSRETURN){/**@author Chazz */
                 printToScreen("  You have chosen to process a return.");
@@ -386,7 +378,7 @@ public class Applet
                 boolean invalidDate = true;
                 
                 while(invalidDate){
-                    printToScreen("  Please re-enter the DATE in the format yyyy-mm-dd:");
+                    printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
                     
                     String date = getInput(10);
                     //invalidDate = (validate date)
@@ -429,13 +421,13 @@ public class Applet
                 //HEADER TRANSITIONS
 
                 if(in.toLowerCase().equals("s")){
-                	setState(SEARCHSTATE);
+                    setState(SEARCHSTATE);
                 }else if(in.toLowerCase().equals("v")){
-                	setState(VIEWVSB);
+                    setState(VIEWVSB);
                 }else if(in.toLowerCase().equals("q")){
-                	setState(INITIAL);
+                    setState(INITIAL);
                 }else if(in.toLowerCase().equals("x")){
-                	fin = true;
+                    setState(EXIT);
                 }else{//Do nothing
                 }
             }else if(state == SEARCHSTATE){/**@author Curtis*/
@@ -493,29 +485,68 @@ public class Applet
                 //clear the basket //VSB.clear();
                 printToScreen("  The basket is now squeaky clean and spotless!");
                 setState(VIEWVSB);
-            }/*else if(state == PLACEORDER){
+            }else if(state == PLACEORDER){/**@author Curtis */
+                //check to make sure the VSB is not empty
+                //calculate total for the order
+                //printToScreen("  The total amount for this order is: " + <total> +".");
                 
-            }else if(state == CONFIRMORDER){
-                
-            }else if(state == CHECKQTY){
-                
-            }else if(state == INSFSTOCK){
-                
-            }else if(state == PAYFORORDER){
-                
-            }else if(state == ORDERFINAL){
-             
+            }else if(state == CHECKQTYFINAL){
+                //done later
+            }else if(state == PAYFORORDER){/**@author Curtis REVISIONS */
+                boolean validCard = false;
+                String cardnum = null;
+                while(!validCard){
+                    printToScreen("  Please enter your credit card number.");
+                    cardnum = getInput(16);
+                    //validate credit card is the right length, authenticatio
+                    validCard = true;
+                    if(!validCard){
+                        printToScreen("  This is not a valid credit card number.");
+                    }
+                }
+                boolean validDate = false;
+                String cardDate = null;
+                while(!validDate){
+                    printToScreen("  Please enter your credit card's expiration date");
+                    printToScreen("  The format for the date is yyyy-mm-dd.");
+                    cardDate = getInput(10);
+                    //Validate that the date is valid 
+                    validDate = true;
+                    if(!validDate){
+                        printToScreen("  This is not a valid date.");
+                    }
+                }
+                //Validate credit card process???
+                boolean validated = true;
+                if(validated){
+                    setState(ORDERFINAL);
+                }else{
+                    printToScreen("  The credit card that you entered could not be validated.");
+                    //loop back
+                }
+            }else if(state == ORDERFINAL){/**@author Curtis*/
+                printToScreen("  Are you sure you would like to place this order?"); 
+                printToScreen("  Once confirmed, the order will be final. Y/N"); 
+                boolean fconfirm = yesno(getInput(1));
+                if(fconfirm){
+                    setState(RECEIPT);
+                }else{
+                    setState(ORDERFAIL);
+                }
             }else if(state == RECEIPT){
-                
+                //Generate the order for placement ionto the DB
+                //Generate receiptID and expected date
+                //Attempt to add to the database, set boolean successful
+                boolean successful = true;
+                if(successful){
+                    printToScreen("  Thank you for your order! Your order number is: " /*+ <receiptID>*/);
+                    printToScreen("  Your order will arrive in approximately " + /*<shipTime + */ " days");
+                }else{
+                    setState(ORDERFAIL);
+                }
             }else if(state == ORDERFAIL){
-                
-            }else if(state == CONFIRMORDER){
-                
-            
-                
-            
-               */ 
-            else if(state == EXIT){
+                //tO BE COMPLETED LATER!!!
+            }else if(state == EXIT){
                 printToScreen(msgout.printExit());
                 fin = true;
             }else{
