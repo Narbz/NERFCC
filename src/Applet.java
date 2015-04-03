@@ -445,7 +445,7 @@ public class Applet
                 String upc = getInput(12);
                 //Search for item with the upc specified
                 printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
-                //Check that the entered qty is an integer between 1 adn itemqty
+                //Check that the entered qty is an integer between 1 and itemqty
                 //Transition
             }else if(state == SEARCHFAILED){/**@author Farhoud*/
                 printToScreen("  No items were found. Would you like to try again? Y/N");
@@ -455,17 +455,45 @@ public class Applet
                 }else{
                     setState(CUSTSTART);
                 }
-            }/*else if(state == ADDTOVSB){
-                
-            }else if(state == ADDTOVSBSUCCESS){
-                
-            }else if(state == ADDTOBSBFAILURE){
-                
-            }else if(state == VIEWVSB){
-                
+            }else if(state == ADDTOVSB){/**@author Curtis (merged VBS SUCCESS/FAIstates in as well)*/
+                //printToScreen("  Do you wish to add " +/*qty*/ + " of the item " +/*itemTitle*/ + "? Y/N");
+                boolean add = yesno(getInput(1));
+                if(add){
+                    //add item to VSB
+                    printToScreen("  The item(s) were successfully added to your basket");
+                }else{
+                    printToScreen("  No items were added to your basket.");
+                }   
+                printToScreen("  Would you like to search for more items? Y/N");
+                boolean more = yesno(getInput(1));
+                if(more){
+                    setState(SEARCHSTATE);
+                }else{
+                    setState(VIEWVSB);
+                }
+            }else if(state == VIEWVSB){/**@author Curtis*/
+                printToScreen("  Here are the items that are currently in your shopping basket:");
+                //Check to make sure the basket is not empty
+                //Generate report print for hte list and print it
+                printToScreen("  If you would like to clear the basket, please enter 'c'.");
+                printToScreen("  If you would like to place an order for these items, pelase enter 'o'");
+                printToScreen("  If you would like to continue searching for items, please enter 's'.");
+                String choice = getInput(1);
+                if(choice.toLowerCase().equals("c")){
+                    setState(CLEARVSB);
+                }else if(choice.toLowerCase().equals("o")){
+                    setState(PLACEORDER);
+                }else if(choice.toLowerCase().equals("s")){
+                    setState(SEARCHSTATE);
+                }else{
+                    printToScreen("  This is not a valid coice.");
+                    //Loop back
+                }
             }else if(state == CLEARVSB){
-                
-            }else if(state == PLACEORDER){
+                //clear the basket //VSB.clear();
+                printToScreen("  The basket is now squeaky clean and spotless!");
+                setState(VIEWVSB);
+            }/*else if(state == PLACEORDER){
                 
             }else if(state == CONFIRMORDER){
                 
