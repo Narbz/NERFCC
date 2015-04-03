@@ -28,6 +28,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<result property="deliveredDate" column="deliveredDate"/>
 </resultMap>
 
+<resultMap id="leadSinger" type="LeadSinger">
+	<result property="upc" column="upc"/>
+    <result property="singerName" column="singerName"/>
+</resultMap>
+
+<resultMap id="hasSong" type="HasSong">
+	<result property="upc" column="upc"/>
+    <result property="songTitle" column="songTitle"/>
+</resultMap>
+
+<resultMap id="customer" type="LeadSinger">
+	<result property="cid" column="cid"/>
+    <result property="customerName" column="customerName"/>
+	<result property="password" column="password"/>
+	<result property="address" column="address"/>
+	<result property="phone" column="phone"/>
+</resultMap>
+
+<resultMap id="purchaseItem" type="PurchaseItem">
+	<result property="receiptID" column="receiptId"/>
+	<result property="upc" column="upc"/>
+    <result property="quantity" column="quantity"/>
+</resultMap>
+
+<resultMap id="record" type="Record">
+	<result property="id" column="id"/>
+</resultMap>
+
+
 
 <!-- add your result maps here -->
 
@@ -38,8 +67,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <!-- for every insert, select and update, ensure to create a unique id for the statement(follow format below) -->
 
+<!-- Insert Statements-->
+
 <insert id="insertItem">
-	insert into Item 
+	insert into Item
 		values (#{upc}, #{itemTitle}, #{type}, #{category}, #{company}, #{year}, #{price}, #{stock})
 </insert>
 
@@ -50,7 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <insert id="insertCustomer">
 	insert into Customer
-		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone});
+		values (#{cid}, SHA(#{password}), #{customerName}, #{address}, #{phone});
 </insert>
 
 <insert id="insertHasSong">
@@ -78,7 +109,67 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		values (#{retid} #{upc}, #{quantity})
 </insert>
 
-<!-- put the rest of your sql statements here. -->
+<!-- Select Statements. -->
+<select id="selectCustomer">
+<!-- if this returns 0, then username does not exist in the system.  If it returns 1, then the username is in the system --> 
+	SELECT count(*)
+	FROM Customer
+	WHERE cid = #{cid}
+</select>
 
+<select id="selectCustomerLogin">
+	SELECT count(*)
+	FROM Customer
+	WHERE Customer.cid = #{cid} AND Customer.password = SHA(#{password})
+</select>
+
+<select id="selectReceiptToVerifyDate">	
+	<!-- if the date false in the 15 day range, a 1 will be returned, 0 otherwise. &lt;= represents less than(or equal to) as xml complains if you put the literal Less then bracket -->
+	SELECT count(*) 
+	FROM Orders 
+	WHERE Orders.receiptId = #{receiptId} AND DATEDIFF(DATE(CURRENT_TIMESTAMP), Orders.date) &lt;= 15
+</select>
+
+<select id="selectItemStock">
+	SELECT Item.stock
+	FROM Item I
+	WHERE I.upc = #{upc}
+</select>
+
+<select id="selectDailySalesReport">
+	SELECT i.upc, i.category, i.price,  sum(quantity) as Sold, round((i.price*sum(quantity)), 2) as total 
+	FROM Orders o, PurchaseItem p, item i 
+	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date}
+	GROUP BY upc
+</select>
+
+<select id="selectTopNItems">
+	SELECT i.upc, i.itemTitle as Title, i.category, i.stock, sum(quantity) as Sold 
+	FROM Orders o, PurchaseItem p, item i 
+	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date} 
+	GROUP BY upc 
+	ORDER BY sold DESC 
+	Limit #{n};
+</select>
+
+<select id="selectItem">
+	SELECT I.upc, I.itemTitle as Title, S.singerName, I.stock, I.price, I.type, I.category, I.company, I.year
+	FROM Item I INNER JOIN LeadSinger S
+	ON I.upc = S.upc)
+	WHERE category = #{category} OR itemTitle = #{itemTitle} OR singerName = #{singerName}
+</select>
+
+<!--Update Statements-->
+<update id="updateItemStock">
+	UPDATE Item
+	SET stock = #{stock}
+	WHERE upc = #{upc}
+</update>
+
+<update id="updateOrderDate">
+	UPDATE Orders
+	SET expectedDate = #{expectedDate}
+	WHERE receiptId = #{receiptId}
+</update>
 
 </mapper>

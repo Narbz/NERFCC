@@ -29,31 +29,31 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </resultMap>
 
 <resultMap id="leadSinger" type="LeadSinger">
-	<result property="upc" column="upc">
-        <result property="singerName" column="singerName">
+	<result property="upc" column="upc"/>
+    <result property="singerName" column="singerName"/>
 </resultMap>
 
 <resultMap id="hasSong" type="HasSong">
-	<result property="upc" column="upc">
-        <result property="songTitle" column="songTitle">
+	<result property="upc" column="upc"/>
+    <result property="songTitle" column="songTitle"/>
 </resultMap>
 
 <resultMap id="customer" type="LeadSinger">
-	<result property="cid" column="cid">
-        <result property="customerName" column="customerName">
-	<result property="password" column="password">
-	<result property="address" column="address">
-	<result property="phone" column="phone">
+	<result property="cid" column="cid"/>
+    <result property="customerName" column="customerName"/>
+	<result property="password" column="password"/>
+	<result property="address" column="address"/>
+	<result property="phone" column="phone"/>
 </resultMap>
 
 <resultMap id="purchaseItem" type="PurchaseItem">
-	<result property="receiptID" column="receiptId">
-	<result property="upc" column="upc">
-        <result property="quantity" column="quantity">
+	<result property="receiptID" column="receiptId"/>
+	<result property="upc" column="upc"/>
+    <result property="quantity" column="quantity"/>
 </resultMap>
 
 <resultMap id="record" type="Record">
-	<result property="id" column="id">
+	<result property="id" column="id"/>
 </resultMap>
 
 
@@ -81,7 +81,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <insert id="insertCustomer">
 	insert into Customer
-		values (#{cid}, #{password}, #{customerName}, #{address}, #{phone});
+		values (#{cid}, SHA(#{password}), #{customerName}, #{address}, #{phone});
 </insert>
 
 <insert id="insertHasSong">
@@ -111,21 +111,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <!-- Select Statements. -->
 <select id="selectCustomer">
-	SELECT Customer.cid
+<!-- if this returns 0, then username does not exist in the system.  If it returns 1, then the username is in the system --> 
+	SELECT count(*)
 	FROM Customer
 	WHERE cid = #{cid}
 </select>
 
 <select id="selectCustomerLogin">
-	SELECT Customer.cid
+	SELECT count(*)
 	FROM Customer
-	WHERE Customer.cid = #{cid} AND Customer.password = #{password}
+	WHERE Customer.cid = #{cid} AND Customer.password = SHA(#{password})
 </select>
 
-<select id="selectReceiptToVerifyDate">
-	SELECT Orders.receiptID
-	FROM Orders where Orders.receiptID = #{receiptID} AND getDate()
-	BETWEEN Orders.date AND DATEADD(dd, 15, Orders.date)
+<select id="selectReceiptToVerifyDate">	
+	<!-- if the date false in the 15 day range, a 1 will be returned, 0 otherwise. &lt;= represents less than(or equal to) as xml complains if you put the literal Less then bracket -->
+	SELECT count(*) 
+	FROM Orders 
+	WHERE Orders.receiptId = #{receiptId} AND DATEDIFF(DATE(CURRENT_TIMESTAMP), Orders.date) &lt;= 15
 </select>
 
 <select id="selectItemStock">
@@ -135,50 +137,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </select>
 
 <select id="selectDailySalesReport">
-	WITH temp(upc, category, price, quantity, receiptId) AS
-	(
-	SELECT Item.upc, Item.category, Item.price, SUM(PurchaseItem.quantity), PurchaseItem.receiptId
-	FROM Item inner join PurchaseItem
-	ON Item.upc=PurchaseItem.upc
-	GROUP BY PuchaseItem.upc
-	),
-	temp2(upc, category, price, quantity, orderDate) AS
-	(
-	SELECT temp.upc, temp.category, Item.price, temp.quantity, Order.date
-	FROM Orders inner join temp
-	ON Orders.receiptId=temp.receiptId
-	)
-	SELECT temp2.upc, temp2.category, temp2.price, temp2.quantity, (temp2.price*temp2.quantity) as total
-	FROM temp2
-	WHERE temp2.date=#{date}
+	SELECT i.upc, i.category, i.price,  sum(quantity) as Sold, round((i.price*sum(quantity)), 2) as total 
+	FROM Orders o, PurchaseItem p, item i 
+	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date}
+	GROUP BY upc
 </select>
 
 <select id="selectTopNItems">
-	WITH temp( itemTitle, company, stock, quantity, receiptId) AS
-	(
-	SELECT Item.itemTitle, Item.company, Item.stock, SUM(PurchaseItem.quantity), PurchaseItem.receiptId
-	FROM Item inner join PurchaseItem
-	ON Item.upc=PurchaseItem.upc
-	GROUP BY PuchaseItem.upc
-	),
-	temp2(itemTile, company, stock, quantity, orderDate) AS
-	(
-	SELECT  temp.itemTitle, temp.company, temp.stock, temp.quantity, Order.date
-	FROM Orders inner join temp
-	ON Orders.receiptId=temp.receiptId
-	)
-	    SELECT top #{n} temp2.itemTitle, temp2.category, temp2.stock, temp2.quantity
-	FROM temp2
-	where temp2.orderDate = #{date}
-	ORDER BY temp2.quantity
+	SELECT i.upc, i.itemTitle as Title, i.category, i.stock, sum(quantity) as Sold 
+	FROM Orders o, PurchaseItem p, item i 
+	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date} 
+	GROUP BY upc 
+	ORDER BY sold DESC 
+	Limit #{n};
 </select>
 
 <select id="selectItem">
-	SELECT *
-	FROM (SELECT *
-		  FROM Item I INNER JOIN LeadSinger S
-		  ON I.upc = S.upc)
-	WHERE category = #{category} OR title = #{title} OR name = #{name}
+	SELECT I.upc, I.itemTitle as Title, S.singerName, I.stock, I.price, I.type, I.category, I.company, I.year
+	FROM Item I INNER JOIN LeadSinger S
+	ON I.upc = S.upc)
+	WHERE category = #{category} OR itemTitle = #{itemTitle} OR singerName = #{singerName}
 </select>
 
 <!--Update Statements-->
@@ -191,7 +169,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <update id="updateOrderDate">
 	UPDATE Orders
 	SET expectedDate = #{expectedDate}
-	WHERE receiptID = #{receiptID}
+	WHERE receiptId = #{receiptId}
 </update>
 
 </mapper>
