@@ -27,7 +27,6 @@ public class Applet
     private final int PROCESSRETURN = 4;
     private final int RETURNITEMS   = 5;
     private final int RETURNCONFIRM = 6;
-    private final int RETURNFAILURE = 7;
     
     //**MANAGER STATES!!!
     private final int MGRSTART      = 10;
@@ -35,9 +34,8 @@ public class Applet
     private final int ADDSUCCESS    = 12;
     private final int ADDFAILURE    = 13;
     private final int PROCDELIVERY  = 21;
-    private final int PROCSUCCESS   = 22;
-    private final int PROCFAILURE   = 23;
-    private final int DSIRINIT      = 31;
+
+    private final int DSRINIT      = 31;
     private final int DSRSUCCESS    = 32;
     private final int DSRFAILURE    = 33;
     private final int NTSRINIT      = 41;
@@ -104,21 +102,19 @@ public class Applet
         boolean fin = false;
         //**MAIN LOOP***
         while(!fin){
-            String input = getInput();
             if(state == INITIAL){/**@author Chazz*/
                 printToScreen(msgout.printWelcome());
-                if(input.startsWith("yes")){
+                boolean hasVisited = yesno(getInput(1));
+                if(hasVisited){
                     setState(LOGIN);
-                }else if(input.startsWith("no")){
-                    setState(REGISTER);
                 }else{
-                    //Print error message
+                    setState(REGISTER);
                 }
             }else if(state == LOGIN){
                 printToScreen("  Please enter your username.");
-                String username = getInput();
+                String username = getInput(50);
                 printToScreen("  Please enter your password.");
-                String password = getInput();
+                String password = getInput(40);
                 
                 //Method to retrieve username from SQL database 
                 //Assume an id and type is returned
@@ -127,6 +123,7 @@ public class Applet
                    setState(LOGIN);
                 }else{
                     //Print successful login message
+                    printToScreen("  Welcome " + username + "!");
                     if(true/* c.type == MANAGER*/){
                         setState(MGRSTART);
                     }else if(true/*c.type == CLERK*/){
@@ -140,32 +137,28 @@ public class Applet
             }else if(state == REGISTER){/**@author Narbeh */
                 printToScreen("  You’re only a few steps away from creating your AMS account!");  
                 printToScreen("  Firstly, please enter your first and last name:");
-                String name = getInput();
-                /*printToScreen("  Please enter your username: ");
-                String username = getInput();*/ //done later 
+                String name = getInput(40);
                 printToScreen("  Please enter your address: ");
-                String address = getInput();
-                printToScreen("  Please enter your city of residence: ");
-                String city = getInput();
+                String address = getInput(40);
                 printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
-                String phonenum = getInput();
+                String phonenum = getInput(12);
                 //TODO make a validate phone number check
                 boolean b = false;
                 while(b = true/*improperPhoneNumber*/){
                     printToScreen("  The phone number you enter is not a valid phone number.");  
                     printToScreen("  A valid number consists of digits 0-9 i.e 123-456-7891.");  
                     printToScreen("  Please re-enter your phone number: (xxx-xxx-xxxx)");
-                    phonenum = getInput();
+                    phonenum = getInput(12);
                 }
                 printToScreen("  Please enter your username that you will use to log in: ");
-                String username = getInput();
+                String username = getInput(50);
                 //TODO sql query to check if user name already exists
                 while(b = true /*userNameExists*/){ 
                     printToScreen("  Sorry, that username is already taken. Please enter another: ");
-                    username = getInput();
+                    username = getInput(50);
                 }
                 printToScreen("  Please enter your password: ");
-                String password = getInput();
+                String password = getInput(40);/*
                 printToScreen("  Please review your information to ensure it is correct.");
                 printToScreen("  If amendments need to be made please enter the number corresponding");
                 printToScreen("  to the field you would like to edit. Enter fin if you are satisfie");
@@ -187,10 +180,17 @@ public class Applet
                 }*/
                 setState(CUSTSTART);
                  
-            }else if(state == INVOP){
-                
             }else if(state == CLERKSTART){
-                
+                printToScreen("  If you wish to process a return, please enter 'r'");
+                printToScreen("  If you wish to log out, please enter 'q'");
+                String choice = getInput(1);
+                if(choice.toLowerCase().equals("r")){
+                setState(RETURNITEMS);	
+                }else if(choice.toLowerCase().equals("q")){
+                	setState(INITIAL);
+                }else{//do nothing
+                	printToScreen("  This is not a valid operation.");
+                }
             }else if(state == PROCESSRETURN){/**@author Chazz */
                 printToScreen("  You have chosen to process a return.");
                 printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
@@ -207,138 +207,314 @@ public class Applet
                     printToScreen("  it either doesn't exist or it is over 15 days old");
                     setState(CLERKSTART);
                 }
+            }else if(state == RETURNITEMS){/**@author Chazz*/
+                boolean allItems = false;
+                while(!allItems){//Add more items to return
+                    //<print items in the order>
+                    printToScreen("  Please select the upc of the item that you"); 
+                    printToScreen("  wish to return, or 'd' if you are finished");
+                    String in = getInput(12); //instead of UPC
+                    boolean done = (in.toLowerCase().equals("d"));
+                    //Search the orders list by upc for a given item
+                    if(!done){//If input is NOT equal to d
+                        //Validate it is a valdi upc until a valid one is selected
+                    }
+                    if(!done /*number is in the list*/){
+                        printToScreen("  Please enter the quantity of items that you wish ");
+                        printToScreen("  to return, or ‘a’ for the entire quantity");
+                        String qty = getInput();
+                        //convert qty to int, success etc
+                        
+                        //<add to the list of returned items>
+                        //<remove items from the order list>
+                        printToScreen("  Do you wish to include more items in this return? Y/N");
+                        boolean yn = yesno(getInput(1));
+                        if(!yn){
+                            allItems = true;
+                        }else{ //continue
+                        }
+                    }else{//Done was selected
+                        allItems = true;
+                    }
+                    
+                        
+                }
+                //After all items are completed
+                setState(RETURNCONFIRM);
             }else if(state == RETURNCONFIRM){/**@author Chazz */
                 printToScreen("  Attempting to process the return for the given items…");
-                //<add items to return table, remove from order???>
+                //<add items to return, returnItem table, increase quantity>
                 boolean success = true;//above
                 if(success){
-                	printToScreen("  The return order has been processed successfully.");
-                	//<print amount to return>
+                    printToScreen("  The return order has been processed successfully.");
+                    //<calculate amount to return>
+                    printToScreen("  <amount> has been refunded to the Customer");
                 }else{
-                	printToScreen("The database has failed to process the return order."); 
+                    printToScreen("  The database has failed to process the return order."); 
+                    //Print the amo
                 }
                 setState(CLERKSTART);
-            }else if(state == MGRSTART){
-                
+            }else if(state == MGRSTART){/**@author Chazz*/
+                printToScreen("  Please select one of the following options:");
+                printToScreen("  To increase the quantity of an existing item or to add "); 
+                printToScreen("  a new item to the database, please enter 'a'.");
+                printToScreen("  To process the delivery of an item, please enter 'p'.");
+                printToScreen("  To generate a sales report for a given date, please enter 'd'.");
+                printToScreen("  To generate a sales report for the top selling items, please enter 'n'.");
+                printToScreen("  tO log out, please enter 'q'");
+                String choice = getInput(1);
+                if(choice.toLowerCase().equals("a")){
+                    setState(ADDITEMS);
+                }else if(choice.toLowerCase().equals("p")){
+                    setState(PROCDELIVERY);
+                }else if(choice.toLowerCase().equals("d")){
+                    setState(DSRINIT);
+                }else if(choice.toLowerCase().equals("n")){
+                    setState(NTSRINIT);
+                }else if(choice.toLowerCase().equals("q")){
+                    setState(INITIAL);
+                }else{//Do nothing
+                    printToScreen("  This is not a valid option. Please try again.");   
+                }
             }else if(state == ADDITEMS){/**@author Narbeh*/
                 printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
-                String upc = getInput();
+                String upc = getInput(12);
                 printToScreen("  Please enter the quantity: ");
-                int qty = Integer.parseInt(getInput());
-                //Check to ensure that this parses correctly
+                
                 if(true/*isExistUPC*/){
-                	//execute updateItemStock
+                    int qty = Integer.parseInt(getInput());
+                    //Check to ensure that this parses correctly
+                    //execute updateItemStock
+                    if(true/*successful*/){
+                        printToScreen("  The database was successfully updated!");
+                        printToScreen("  Would you like to add more items? Y/N");
+                        boolean moreItems = yesno(getInput(1));
+                        if(!moreItems){
+                            setState(MGRSTART);
+                        }
+                    }else{
+                        printToScreen("  The database failed to update correctly");
+                    }
+                    
                 }else{//this means the item is a new one
                     printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
                     printToScreen("  Would you like to add it to the inventory? Y/N");
-                    boolean addToInv = yesno(getInput());
-                    if(addToInv){
-                		printToScreen("  Please enter the TITLE of the item: ");
-                		String itemTitle = getInput();
-                		printToScreen("  Please enter the TYPE of the item: ");
-                		String type = getInput();
-                		printToScreen("  Please enter the CATEGORY of the item: ");
-                		String category = getInput();
-                		//Check to ensure it is a particular type? Perhaps enum?
+                    boolean addToInv = yesno(getInput(1));
+                    if(addToInv){//Adding a ne witem to the inventory
+                        printToScreen("  Please enter the TITLE of the item: ");
+                        String itemTitle = getInput(40);
+                        printToScreen("  Please enter the TYPE of the item: ");
+                        String type = getInput(3);
+                        printToScreen("  Please enter the CATEGORY of the item: ");
+                        String category = getInput(10);
+                        //Check to ensure it is a particular type? Perhaps enum?
 
-                		printToScreen("  Please enter the COMPANY the item came from:  ");
-                		String company = getInput();
-                		printToScreen("  Please enter the selling PRICE: ");
-                		double price = Double.parseDouble(getInput());
-                		//Check to ensure that it is parsed correctly
-                		printToScreen("  Please enter the YEAR the item was created: ");
-                		int year = Integer.parseInt(getInput());
-                    }
-                		
+                        printToScreen("  Please enter the COMPANY the item came from:  ");
+                        String company = getInput(20);
+                        printToScreen("  Please enter the selling PRICE: ");
+                        double price = Double.parseDouble(getInput());
+                        //Check to ensure that it is parsed correctly
+                        printToScreen("  Please enter the YEAR the item was created: ");
+                        int year = Integer.parseInt(getInput(4));
+                        printToScreen("  Now attemting to add the new item into the database.");
+                        //insert new item into db
+                        boolean success = true;
+                        if(success){
+                            printToScreen("  The item has been successfully aded to the database!");
+                        }else{
+                            printToScreen("  Error: the item was not added to the database");
+                        }
+                        printToScreen("  Would you like to add more items?Y/N");
+                        boolean moreItems = yesno(getInput(1));
+                        if(!moreItems){
+                            setState(MGRSTART);
+                        }
+                        
                     
-                }
-                printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
-                //<print off information>
-                boolean done = yesno(getInput());
-                /*
-                while(!done){
-                	<user enters field number>
-                	getFieldName + prevEnteredField
-                	" please enter the new information: "
-                	<user enters new information>
-                	"  do you want to make any more changes? Y/N"
-                	if(user entered Y){
-                		done= true;
+                    }//else do nothing and cycle back     
+                    /*printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
+                    //<print off information>
+                    boolean done = yesno(getInput());
+                    while(!done){
+                        <user enters field number>
+                        getFieldName + prevEnteredField
+                        " please enter the new information: "
+                        <user enters new information>
+                        "  do you want to make any more changes? Y/N"
+                        if(user entered Y){
+                            done= true;
+                        }
                     }
+                    setState(MGRSTART);
+                        */
                 }
-                    */
-                setState(MGRSTART);
-            }else if(state == ADDSUCCESS){
-                
-            }else if(state == ADDFAILURE){
                 
             }else if(state == PROCDELIVERY){
                 printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
-            	String receiptID = getInput();
-            	boolean isReceiptIDValid;
-            	if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
-            		isReceiptIDValid = false;
+                String receiptID = getInput();
+                boolean isReceiptIDValid;
+                if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
+                    isReceiptIDValid = false;
                 }else{
                     isReceiptIDValid = true;
                 }
-            	while(!isReceiptIDValid){
-            	    printToScreen("  Invalid receiptId entered. ");
-            	    printToScreen("Please enter the ReceiptID of the order you wish to update: ");
-            		receiptID = getInput();
+                while(!isReceiptIDValid){
+                    printToScreen("  Invalid receiptId entered. ");
+                    printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
+                    receiptID = getInput();
                 }
                 printToScreen("  Has this order been shipped? Y/N");
-                boolean wasUpdated = yesno(getInput());
-            	if(wasUpdated){
-            		//<execute updateOrderDate>
+                boolean wasUpdated = yesno(getInput(1));
+                if(wasUpdated){
+                    //<execute updateOrderDate>
                 }else{
-            		printToScreen("  Order not updated");	
+                    printToScreen("  Order not updated");   
                 }
             
                 printToScreen("  Would you like to update another? Y/N");
-                boolean another = yesno(getInput());
-            	if(another){
-            	   setState(PROCDELIVERY);
-                }else{
-                	setState(MGRSTART);
+                boolean another = yesno(getInput(1));
+                if(!another){
+                   setState(MGRSTART);
                 }
-            }/*else if(state == ){
+            }else if(state == DSRINIT){
                 
-            }else if(state == ){
+            }else if(state == DSRSUCCESS){
                 
-            }else if(state == ){
+            }else if(state == DSRFAILURE){
                 
-            }else if(state == ){
+            }else if(state == NTSRINIT){/**@author narbeh HEAVY REVISION*/
+                boolean invalidDate = true;
                 
-            }else if(state == ){
+                while(invalidDate){
+                    printToScreen("  Please re-enter the DATE in the format yyyy-mm-dd:");
+                    
+                    String date = getInput(10);
+                    //invalidDate = (validate date)
+                    if(invalidDate){
+                        printToScreen("  This is not a valid date");
+                    }
+                }
+                boolean invalidNumber = true;
+                while(invalidNumber){
+                    printToScreen("  Please enter the number of items you would like to see:");
+                    String num = getInput(); //Limits?
+                    //convert num to int
+                    //Check to ensure number is an int, set invalidNumber
+                    if(invalidNumber){
+                        printToScreen("  This is not a valid number");
+                        //loop back
+                    }
+                    
+                }
+            
+                //<execute selectTopNItems>, set success here
+                boolean success = true;
+                if(success){
+                    //-Format the result of the query records separated by newline characters- 
+                    //<display the data>
+                    setState(NTSRSUCCESS);
+                }else{
+                    setState(NTSRFAILURE);
+                }
+
+            }else if(state == NTSRSUCCESS){/**@author Chazz*/
+                printToScreen("  Please press enter/preturn to continue.");
+                String dummy = getInput();
+                setState(MGRSTART);
+            }else if(state == NTSRFAILURE){/**@author Chazz*/
+                printToScreen("  The system failed to generate the rqueted report");
+            }else if(state == CUSTSTART){/**@author Chazz*/
+                printToScreen("  Search - 's', View Basket - 'v', logout - 'q', exit - 'x'");
+                String in = getInput(1);
+                //HEADER TRANSITIONS
+
+                if(in.toLowerCase().equals("s")){
+                	setState(SEARCHSTATE);
+                }else if(in.toLowerCase().equals("v")){
+                	setState(VIEWVSB);
+                }else if(in.toLowerCase().equals("q")){
+                	setState(INITIAL);
+                }else if(in.toLowerCase().equals("x")){
+                	fin = true;
+                }else{//Do nothing
+                }
+            }else if(state == SEARCHSTATE){/**@author Curtis*/
+                //no point in writign this without the search method
+            }else if(state == SELECTITEM){/**@author Curtis INCOMPLETE!!!!*/
+                printToScreen("  Please enter the UPC of the item that you wish to add");
+                String upc = getInput(12);
+                //Search for item with the upc specified
+                printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
+                //Check that the entered qty is an integer between 1 and itemqty
+                //Transition
+            }else if(state == SEARCHFAILED){/**@author Farhoud*/
+                printToScreen("  No items were found. Would you like to try again? Y/N");
+                boolean again = yesno(getInput(1));
+                if(again){
+                    setState(SEARCHSTATE);
+                }else{
+                    setState(CUSTSTART);
+                }
+            }else if(state == ADDTOVSB){/**@author Curtis (merged VBS SUCCESS/FAIstates in as well)*/
+                //printToScreen("  Do you wish to add " +/*qty*/ + " of the item " +/*itemTitle*/ + "? Y/N");
+                boolean add = yesno(getInput(1));
+                if(add){
+                    //add item to VSB
+                    printToScreen("  The item(s) were successfully added to your basket");
+                }else{
+                    printToScreen("  No items were added to your basket.");
+                }   
+                printToScreen("  Would you like to search for more items? Y/N");
+                boolean more = yesno(getInput(1));
+                if(more){
+                    setState(SEARCHSTATE);
+                }else{
+                    setState(VIEWVSB);
+                }
+            }else if(state == VIEWVSB){/**@author Curtis*/
+                printToScreen("  Here are the items that are currently in your shopping basket:");
+                //Check to make sure the basket is not empty
+                //Generate report print for hte list and print it
+                printToScreen("  If you would like to clear the basket, please enter 'c'.");
+                printToScreen("  If you would like to place an order for these items, pelase enter 'o'");
+                printToScreen("  If you would like to continue searching for items, please enter 's'.");
+                String choice = getInput(1);
+                if(choice.toLowerCase().equals("c")){
+                    setState(CLEARVSB);
+                }else if(choice.toLowerCase().equals("o")){
+                    setState(PLACEORDER);
+                }else if(choice.toLowerCase().equals("s")){
+                    setState(SEARCHSTATE);
+                }else{
+                    printToScreen("  This is not a valid coice.");
+                    //Loop back
+                }
+            }else if(state == CLEARVSB){
+                //clear the basket //VSB.clear();
+                printToScreen("  The basket is now squeaky clean and spotless!");
+                setState(VIEWVSB);
+            }/*else if(state == PLACEORDER){
                 
-            }else if(state == ){
+            }else if(state == CONFIRMORDER){
                 
-            }else if(state == ){
+            }else if(state == CHECKQTY){
                 
-            }else if(state == ){
+            }else if(state == INSFSTOCK){
                 
-            }else if(state == ){
+            }else if(state == PAYFORORDER){
                 
-            }else if(state == ){
+            }else if(state == ORDERFINAL){
+             
+            }else if(state == RECEIPT){
                 
-            }else if(state == ){
+            }else if(state == ORDERFAIL){
                 
-            }else if(state == ){
+            }else if(state == CONFIRMORDER){
                 
-            }else if(state == ){
+            
                 
-            }else if(state == ){
-                
-            }else if(state == ){
-                
-            }else if(state == ){
-                
-            }else if(state == ){
-                
-            }else if(state == ){
-                
-            }else if(state == ){
-                */
+            
+               */ 
             else if(state == EXIT){
                 printToScreen(msgout.printExit());
                 fin = true;
@@ -384,6 +560,21 @@ public class Applet
         return reader.getInput().trim();
     }
     
+    /**
+     * Pverloaded method to retrieve a String with a defined max length
+     * @param max the max length
+     * @return a String of length <= n
+     * @author Chazz Young
+     */
+    public String getInput(int maxLength)
+    {
+        String input = getInput();
+        if(input.length() > maxLength){
+            return input.substring(0, maxLength);
+        }//else
+        return input;
+    }
+    
     private void setState(int newState)
     {
         state = newState;
@@ -404,8 +595,9 @@ public class Applet
                 return true;
             }else if(yn.toUpperCase().equals("N")){
                 return false;
-            }else{
+            }else{//Invalid response
                 printToScreen("  This is not a valid choice. Please enter 'y' or 'n'");
+                yn = getInput(1);
             }
         }
         return done;
