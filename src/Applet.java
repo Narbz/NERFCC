@@ -27,7 +27,6 @@ public class Applet
     private final int PROCESSRETURN = 4;
     private final int RETURNITEMS   = 5;
     private final int RETURNCONFIRM = 6;
-    private final int RETURNFAILURE = 7;
     
     //**MANAGER STATES!!!
     private final int MGRSTART      = 10;
@@ -35,8 +34,7 @@ public class Applet
     private final int ADDSUCCESS    = 12;
     private final int ADDFAILURE    = 13;
     private final int PROCDELIVERY  = 21;
-    private final int PROCSUCCESS   = 22;
-    private final int PROCFAILURE   = 23;
+
     private final int DSRINIT      = 31;
     private final int DSRSUCCESS    = 32;
     private final int DSRFAILURE    = 33;
@@ -104,7 +102,6 @@ public class Applet
         boolean fin = false;
         //**MAIN LOOP***
         while(!fin){
-            String input = getInput();
             if(state == INITIAL){/**@author Chazz*/
                 printToScreen(msgout.printWelcome());
                 boolean hasVisited = yesno(getInput(1));
@@ -143,8 +140,6 @@ public class Applet
                 String name = getInput(40);
                 printToScreen("  Please enter your address: ");
                 String address = getInput(40);
-                printToScreen("  Please enter your city of residence: ");
-                String city = getInput(40);
                 printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
                 String phonenum = getInput(12);
                 //TODO make a validate phone number check
@@ -185,10 +180,17 @@ public class Applet
                 }*/
                 setState(CUSTSTART);
                  
-            }else if(state == INVOP){
-                
             }else if(state == CLERKSTART){
-                
+                printToScreen("  If you wish to process a return, please enter 'r'");
+                printToScreen("  If you wish to log out, please enter 'q'");
+                String choice = getInput(1);
+                if(choice.toLowerCase().equals("r")){
+                setState(RETURNITEMS);	
+                }else if(choice.toLowerCase().equals("q")){
+                	setState(INITIAL);
+                }else{//do nothing
+                	printToScreen("  This is not a valid operation.");
+                }
             }else if(state == PROCESSRETURN){/**@author Chazz */
                 printToScreen("  You have chosen to process a return.");
                 printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
@@ -209,7 +211,8 @@ public class Applet
                 boolean allItems = false;
                 while(!allItems){//Add more items to return
                     //<print items in the order>
-                    printToScreen("  Please select the upc of the item that you wish to return, or 'd' if you are finished");
+                    printToScreen("  Please select the upc of the item that you"); 
+                    printToScreen("  wish to return, or 'd' if you are finished");
                     String in = getInput(12); //instead of UPC
                     boolean done = (in.toLowerCase().equals("d"));
                     //Search the orders list by upc for a given item
@@ -258,6 +261,7 @@ public class Applet
                 printToScreen("  To process the delivery of an item, please enter 'p'.");
                 printToScreen("  To generate a sales report for a given date, please enter 'd'.");
                 printToScreen("  To generate a sales report for the top selling items, please enter 'n'.");
+                printToScreen("  tO log out, please enter 'q'");
                 String choice = getInput(1);
                 if(choice.toLowerCase().equals("a")){
                     setState(ADDITEMS);
@@ -267,6 +271,8 @@ public class Applet
                     setState(DSRINIT);
                 }else if(choice.toLowerCase().equals("n")){
                     setState(NTSRINIT);
+                }else if(choice.toLowerCase().equals("q")){
+                    setState(INITIAL);
                 }else{//Do nothing
                     printToScreen("  This is not a valid option. Please try again.");   
                 }
@@ -279,11 +285,22 @@ public class Applet
                     int qty = Integer.parseInt(getInput());
                     //Check to ensure that this parses correctly
                     //execute updateItemStock
+                    if(true/*successful*/){
+                        printToScreen("  The database was successfully updated!");
+                        printToScreen("  Would you like to add more items? Y/N");
+                        boolean moreItems = yesno(getInput(1));
+                        if(!moreItems){
+                            setState(MGRSTART);
+                        }
+                    }else{
+                        printToScreen("  The database failed to update correctly");
+                    }
+                    
                 }else{//this means the item is a new one
                     printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
                     printToScreen("  Would you like to add it to the inventory? Y/N");
                     boolean addToInv = yesno(getInput(1));
-                    if(addToInv){
+                    if(addToInv){//Adding a ne witem to the inventory
                         printToScreen("  Please enter the TITLE of the item: ");
                         String itemTitle = getInput(40);
                         printToScreen("  Please enter the TYPE of the item: ");
@@ -299,28 +316,38 @@ public class Applet
                         //Check to ensure that it is parsed correctly
                         printToScreen("  Please enter the YEAR the item was created: ");
                         int year = Integer.parseInt(getInput(4));
-                    }
+                        printToScreen("  Now attemting to add the new item into the database.");
+                        //insert new item into db
+                        boolean success = true;
+                        if(success){
+                            printToScreen("  The item has been successfully aded to the database!");
+                        }else{
+                            printToScreen("  Error: the item was not added to the database");
+                        }
+                        printToScreen("  Would you like to add more items?Y/N");
+                        boolean moreItems = yesno(getInput(1));
+                        if(!moreItems){
+                            setState(MGRSTART);
+                        }
                         
                     
-                }
-                /*printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
-                //<print off information>
-                boolean done = yesno(getInput());
-                while(!done){
-                    <user enters field number>
-                    getFieldName + prevEnteredField
-                    " please enter the new information: "
-                    <user enters new information>
-                    "  do you want to make any more changes? Y/N"
-                    if(user entered Y){
-                        done= true;
+                    }//else do nothing and cycle back     
+                    /*printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
+                    //<print off information>
+                    boolean done = yesno(getInput());
+                    while(!done){
+                        <user enters field number>
+                        getFieldName + prevEnteredField
+                        " please enter the new information: "
+                        <user enters new information>
+                        "  do you want to make any more changes? Y/N"
+                        if(user entered Y){
+                            done= true;
+                        }
                     }
+                    setState(MGRSTART);
+                        */
                 }
-                    */
-                setState(MGRSTART);
-            }else if(state == ADDSUCCESS){
-                
-            }else if(state == ADDFAILURE){
                 
             }else if(state == PROCDELIVERY){
                 printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
@@ -346,19 +373,15 @@ public class Applet
             
                 printToScreen("  Would you like to update another? Y/N");
                 boolean another = yesno(getInput(1));
-                if(another){
-                   setState(PROCDELIVERY);
-                }else{
-                    setState(MGRSTART);
+                if(!another){
+                   setState(MGRSTART);
                 }
-            }else if(state == PROCSUCCESS){
-                /*
-            }else if(state == PROCFAILURE){
-                
             }else if(state == DSRINIT){
                 
+            }else if(state == DSRSUCCESS){
+                
             }else if(state == DSRFAILURE){
-                */
+                
             }else if(state == NTSRINIT){/**@author narbeh HEAVY REVISION*/
                 boolean invalidDate = true;
                 
@@ -384,46 +407,85 @@ public class Applet
                     
                 }
             
-                /*
-                <execute selectTopNItems>, set success here
-                -Format the result of the query records separated by newline characters- 
-                <display the data>
-                */
-                //Take an input and go to MGRSTART after
+                //<execute selectTopNItems>, set success here
                 boolean success = true;
                 if(success){
+                    //-Format the result of the query records separated by newline characters- 
+                    //<display the data>
                     setState(NTSRSUCCESS);
                 }else{
                     setState(NTSRFAILURE);
                 }
 
-            }/*else if(state == ){
+            }else if(state == NTSRSUCCESS){/**@author Chazz*/
+                printToScreen("  Please press enter/preturn to continue.");
+                String dummy = getInput();
+                setState(MGRSTART);
+            }else if(state == NTSRFAILURE){/**@author Chazz*/
+                printToScreen("  The system failed to generate the rqueted report");
+            }else if(state == CUSTSTART){/**@author Chazz*/
+                printToScreen("  Search - 's', View Basket - 'v', logout - 'q', exit - 'x'");
+                String in = getInput(1);
+                //HEADER TRANSITIONS
+
+                if(in.toLowerCase().equals("s")){
+                	setState(SEARCHSTATE);
+                }else if(in.toLowerCase().equals("v")){
+                	setState(VIEWVSB);
+                }else if(in.toLowerCase().equals("q")){
+                	setState(INITIAL);
+                }else if(in.toLowerCase().equals("x")){
+                	fin = true;
+                }else{//Do nothing
+                }
+            }else if(state == SEARCHSTATE){/**@author Curtis*/
+                //no point in writign this without the search method
+            }else if(state == SELECTITEM){/**@author Curtis INCOMPLETE!!!!*/
+                printToScreen("  Please enter the UPC of the item that you wish to add");
+                String upc = getInput(12);
+                //Search for item with the upc specified
+                printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
+                //Check that the entered qty is an integer between 1 adn itemqty
+                //Transition
+            }else if(state == SEARCHFAILED){/**@author Farhoud*/
+                printToScreen("  No items were found. Would you like to try again? Y/N");
+                boolean again = yesno(getInput(1));
+                if(again){
+                    setState(SEARCHSTATE);
+                }else{
+                    setState(CUSTSTART);
+                }
+            }/*else if(state == ADDTOVSB){
                 
-            }else if(state == ){
+            }else if(state == ADDTOVSBSUCCESS){
                 
-            }else if(state == ){
+            }else if(state == ADDTOBSBFAILURE){
                 
-            }else if(state == ){
+            }else if(state == VIEWVSB){
                 
-            }else if(state == ){
+            }else if(state == CLEARVSB){
                 
-            }else if(state == ){
+            }else if(state == PLACEORDER){
                 
-            }else if(state == ){
+            }else if(state == CONFIRMORDER){
                 
-            }else if(state == ){
+            }else if(state == CHECKQTY){
                 
-            }else if(state == ){
+            }else if(state == INSFSTOCK){
                 
-            }else if(state == ){
+            }else if(state == PAYFORORDER){
                 
-            }else if(state == ){
+            }else if(state == ORDERFINAL){
+             
+            }else if(state == RECEIPT){
                 
-            }else if(state == ){
+            }else if(state == ORDERFAIL){
                 
-            }else if(state == ){
+            }else if(state == CONFIRMORDER){
                 
-            }else if(state == ){
+            
+                
+            
                */ 
             else if(state == EXIT){
                 printToScreen(msgout.printExit());
@@ -507,6 +569,7 @@ public class Applet
                 return false;
             }else{//Invalid response
                 printToScreen("  This is not a valid choice. Please enter 'y' or 'n'");
+                yn = getInput(1);
             }
         }
         return done;
