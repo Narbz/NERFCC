@@ -52,6 +52,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <result property="quantity" column="quantity"/>
 </resultMap>
 
+<resultMap id="return" type="Return">
+	<result property="retid" column="retid"/>
+	<result property="date" column="date"/>
+	<result property="receiptId" column="receiptId"/>
+</resultMap>
+
+<resultMap id="returnItem" type="Return">
+	<result property="retid" column="retid"/>
+	<result property="upc" column="upc"/>
+	<result property="quantity" column="quantity"/>
+</resultMap>
+
 <resultMap id="record" type="Record">
 	<result property="id" column="id"/>
 </resultMap>
@@ -131,7 +143,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </select>
 
 <select id="selectItemStock">
-	SELECT Item.stock
+	SELECT I.stock
 	FROM Item I
 	WHERE I.upc = #{upc}
 </select>
