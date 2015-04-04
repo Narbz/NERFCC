@@ -260,7 +260,7 @@ public class StateHandler
         printToScreen("  To process the delivery of an item, please enter 'p'.");
         printToScreen("  To generate a sales report for a given date, please enter 'd'.");
         printToScreen("  To generate a sales report for the top selling items, please enter 'n'.");
-        printToScreen("  tO log out, please enter 'q'");
+        printToScreen("  To log out, please enter 'q'");
         String choice = getInput(1);
         if(choice.toLowerCase().equals("a")){
             return st.ADDITEMS;
@@ -526,42 +526,84 @@ public class StateHandler
      */
     public State SEARCHSTATE()
     {
-        //incomplete
-        return null;
+    	printToScreen("  What category is the item you're searching for? CD/DVD/Music Book/Music Sheet");
+    	String category = getInput(2);
+    	printToScreen("  What is the title of the item you're search for?");
+    	String title = getInput(20);
+    	if(category.toLowerCase().equals("cd")){
+    		printToScreen("  Who is the lead singer of the item you're search for?");
+    		String leadsinger = getInput(20);
+    	}
+    	if(category.equals("") && title.equals("")){
+    		return st.SEARCHFAILED;
+    	}
+    	
+    	//LIST ITEMS - IMCOMPLETE!!!
+    	
+    	//IF NO ITEMS TRANSITION TO SEARCHFAILED
+    	/*if(itemlist.length <= 0){
+    		return st.SEARCHFAILED;
+    	}*/
+    	
+        return st.SELECTITEM;
     }
     
     /**
-     * @author Narbeh INCOMPLETE!!!
+     * @author Curtis
      */
     public State SELECTITEM()
     {
-         printToScreen("  Please enter the UPC of the item that you wish to add");
+        printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
+        if(upc.toLowerCase().equals("s")){
+        	return st.SEARCHSTATE;
+        }
         //Search for item with the upc specified
         printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
         //Check that the entered qty is an integer between 1 and itemqty
         //Transition
-        return null;
+        return st.CHECKQTY;
     }
     
     /**
-     * @author 
+     * @author Curtis
      */
     public State CHECKQTY()
     {
-        return null;
+    	if(true/*itemqty <= item.stock*/){
+    		return st.ADDTOVSB;
+    	}
+    	else{
+    		return st.INSFSTOCK;
+    	}
+        
     }
     
     /**
-     * @author 
+     * @author Curtis
      */
     public State INSFSTOCK()
     {
-        return null;
+    	printToScreen("  Sorry there is not enough of that item in stock. ");
+    	if(true/*item.stock != 0*/){
+    		printToScreen("  Would you like to accept "+/*item.stock+*/" of this item instead? Y/N");
+    		boolean accept = yesno(getInput(1));
+    		if(accept){
+    			return st.ADDTOVSB;
+    		}
+    		else{
+    			return st.SEARCHSTATE;
+    		}
+    	}
+    	else{
+    		printToScreen("  Sorry, this item is no longer in stock.");
+    		return st.SEARCHSTATE;
+    	}
+    	
     }
     
     /**
-     * @author 
+     * @author Curtis
      */
     public State SEARCHFAILED()
     {
@@ -575,7 +617,7 @@ public class StateHandler
     }
     
     /**
-     * @author Curtis (merged VBS SUCCESS/FAIstates in as well)
+     * @author Curtis (merged VBS SUCCESS/FAIL states in as well)
      */
     public State ADDTOVSB()
     {
@@ -603,9 +645,9 @@ public class StateHandler
     {
         printToScreen("  Here are the items that are currently in your shopping basket:");
         //Check to make sure the basket is not empty
-        //Generate report print for hte list and print it
+        //Generate report print for the list and print it
         printToScreen("  If you would like to clear the basket, please enter 'c'.");
-        printToScreen("  If you would like to place an order for these items, pelase enter 'o'");
+        printToScreen("  If you would like to place an order for these items, please enter 'o'");
         printToScreen("  If you would like to continue searching for items, please enter 's'.");
         String choice = getInput(1);
         if(choice.toLowerCase().equals("c")){
