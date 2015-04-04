@@ -85,7 +85,7 @@ public class ams {
           session.close();
           //END FOOTER
       }
-      public void insert(LeadSinger leadSinger) throws IOException, SQLException
+      public void insertLeadSinger(LeadSinger leadSinger) throws IOException, SQLException
       {
     	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -101,7 +101,7 @@ public class ams {
           //END FOOTER
       }
       
-      public void insert(HasSong hasSong) throws IOException, SQLException
+      public void insertHasSong(HasSong hasSong) throws IOException, SQLException
       {
     	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -110,7 +110,7 @@ public class ams {
           //END HEADER
           
           //QUERY TO EXECUTE
-          session.insert("ams.inserthasSong", hasSong);
+          session.insert("ams.insertHasSong", hasSong);
           //FOOTER
           session.commit();
           session.close();
@@ -133,7 +133,7 @@ public class ams {
           //END FOOTER
       }
       
-      public void insert(Return ret) throws IOException, SQLException
+      public void insertReturn(Return ret) throws IOException, SQLException
       {
     	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -149,7 +149,7 @@ public class ams {
           //END FOOTER
       }
       
-      public void insert(ReturnItem returnItem) throws IOException, SQLException
+      public void insertReturnItem(ReturnItem returnItem) throws IOException, SQLException
       {
     	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
