@@ -19,6 +19,8 @@ public class StateHandler
     private Order order;
     private Item itemToAdd;
     
+    private ErrorChecker ec;
+    
     private ams database;
 
     public StateHandler()
@@ -30,6 +32,7 @@ public class StateHandler
         order = null;
         itemToAdd = null;
         database = new ams();
+        ec = new ErrorChecker();
     }
 
     //STATE METHODS
@@ -95,15 +98,15 @@ public class StateHandler
         String name = getInput(40);
         printToScreen("  Please enter your address: ");
         String address = getInput(40);
-        printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
-        String phonenum = getInput(12);
-        //TODO make a validate phone number check
-        boolean invalidNum = false;
+        printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
+        String phonenum = getInput(10);
+        boolean invalidNum = ec.checkPhoneNum(phonenum);
         while(invalidNum/*improperPhoneNumber*/){
             printToScreen("  The phone number you enter is not a valid phone number.");  
-            printToScreen("  A valid number consists of digits 0-9 i.e 123-456-7891.");  
-            printToScreen("  Please re-enter your phone number: (xxx-xxx-xxxx)");
+            printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
+            printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
             phonenum = getInput(12);
+            invalidNum = ec.checkPhoneNum(phonenum);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         String username = getInput(50);
@@ -119,7 +122,7 @@ public class StateHandler
         try{
             database.insertCustomer(newCust);
         }catch(Exception e){
-            printToScreen("Error");
+            printToScreen(e.getMessage());
         }
         /*
         printToScreen("  Please review your information to ensure it is correct.");

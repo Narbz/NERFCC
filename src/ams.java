@@ -30,6 +30,10 @@ public class ams {
            session.close();
       }
               
+      /**
+       * IT F*CKING WORKS!!!!
+       * @author Chazz Young
+       */
       public void insertCustomer(Customer toAdd) throws IOException, SQLException
       {
       
