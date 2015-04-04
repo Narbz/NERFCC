@@ -12,10 +12,27 @@ public class StateHandler
 {
     private State st;
     private InputReader reader;
+    private Customer cust;
+    private final Customer clerk1 = new Customer("Clerk1", "clrk", "1234", null, null);
+    private final Customer mgr1 = new Customer("Manager1", "mgr1", "1337", null, null);
+    private ArrayList<Item> VSB, orderItems, INSFStock;
+    private Order order;
+    private Item itemToAdd;
+    
+    private ErrorChecker ec;
+    
+    private ams database;
 
     public StateHandler()
     {
         reader = new InputReader();
+        cust = null;
+        VSB = new ArrayList<Item>(); orderItems = new ArrayList<Item>();
+        INSFStock = new ArrayList<Item>();
+        order = null;
+        itemToAdd = null;
+        database = new ams();
+        ec = new ErrorChecker();
     }
 
     //STATE METHODS
@@ -43,7 +60,13 @@ public class StateHandler
         String username = getInput(50);
         printToScreen("  Please enter your password.");
         String password = getInput(40);
-        
+        if(username.equals(clerk1.getCID()) && password.equals(clerk1.getPassword())){
+            cust = clerk1;
+            return st.CLERKSTART;
+        }else if(username.equals(mgr1.getCID()) && password.equals(mgr1.getPassword())){
+            cust = mgr1;
+            return st.MGRSTART;
+        }
         //Method to retrieve username from SQL database 
         //Assume an id and type is returned
         if(true/*c == null*/){
@@ -75,25 +98,33 @@ public class StateHandler
         String name = getInput(40);
         printToScreen("  Please enter your address: ");
         String address = getInput(40);
-        printToScreen("  Please enter your phone number(xxx-xxx-xxxx): ");
-        String phonenum = getInput(12);
-        //TODO make a validate phone number check
-        boolean b = false;
-        while(b = true/*improperPhoneNumber*/){
+        printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
+        String phonenum = getInput(10);
+        boolean invalidNum = ec.checkPhoneNum(phonenum);
+        while(invalidNum/*improperPhoneNumber*/){
             printToScreen("  The phone number you enter is not a valid phone number.");  
-            printToScreen("  A valid number consists of digits 0-9 i.e 123-456-7891.");  
-            printToScreen("  Please re-enter your phone number: (xxx-xxx-xxxx)");
+            printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
+            printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
             phonenum = getInput(12);
+            invalidNum = ec.checkPhoneNum(phonenum);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         String username = getInput(50);
+        boolean invalidUser = false;
         //TODO sql query to check if user name already exists
-        while(b = true /*userNameExists*/){ 
+        while(invalidUser /*userNameExists*/){ 
             printToScreen("  Sorry, that username is already taken. Please enter another: ");
             username = getInput(50);
         }
         printToScreen("  Please enter your password: ");
-        String password = getInput(40);/*
+        String password = getInput(40);
+        Customer newCust = new Customer(username, name, password, address, phonenum);
+        try{
+            database.insertCustomer(newCust);
+        }catch(Exception e){
+            printToScreen(e.getMessage());
+        }
+        /*
         printToScreen("  Please review your information to ensure it is correct.");
         printToScreen("  If amendments need to be made please enter the number corresponding");
         printToScreen("  to the field you would like to edit. Enter fin if you are satisfie");
@@ -114,6 +145,7 @@ public class StateHandler
             fin = true
         }*/
         //Add customer to db
+        cust = newCust;
         return st.CUSTSTART;
          
     }
@@ -361,27 +393,49 @@ public class StateHandler
     }
     
     /**
-     * @author 
+     * @author Narbeh
      */
     public State DSRINIT()
     {
-        return null;
-    }
-    
-    /**
-     * @author 
-     */
-    public State DSRSUCCESS()
-    {
-        return null;
-    }
-    
-    /**
-     * @author 
-     */
-    public State DSRFAILURE()
-    {
-        return null;
+        String date = null;
+        boolean invalidDate = true;
+        
+        while(invalidDate){
+            printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
+            
+            date = getInput(10);
+            //invalidDate = (validate date)
+            if(invalidDate){
+                printToScreen("  This is not a valid date");
+            }else{
+                //Method to determine whether the date given is in the future
+                boolean inFuture = false;
+                if(inFuture){
+                    printToScreen("  The date that you entered is in the future.");
+                }else{
+                    invalidDate = false;
+                }
+            }
+        }
+        
+        //execute the daily ales report function
+        
+        boolean foundDate = true;
+        if(foundDate){
+            //Build the report
+            printToScreen("  Press enter when you are finished.");
+            String dummy = getInput();
+            return st.MGRSTART;
+        }else{
+            printToScreen("  Sorry, the date you specified contains no sales information.");
+            printToScreen("  Would you like to enter another date? Y/N:");
+            boolean again = yesno(getInput(1));
+            if(again){
+                return st.DSRINIT;
+            }else{
+                return st.MGRSTART;
+            }
+        }
     }
     
     /**
@@ -389,21 +443,23 @@ public class StateHandler
      */
     public State NTSRINIT()
     {
+        String date = null;
         boolean invalidDate = true;
                 
         while(invalidDate){
             printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
             
-            String date = getInput(10);
+            date = getInput(10);
             //invalidDate = (validate date)
             if(invalidDate){
                 printToScreen("  This is not a valid date");
             }
         }
+        String num = null;;
         boolean invalidNumber = true;
         while(invalidNumber){
             printToScreen("  Please enter the number of items you would like to see:");
-            String num = getInput(); //Limits?
+            num = getInput(); //Limits?
             //convert num to int
             //Check to ensure number is an int, set invalidNumber
             if(invalidNumber){
