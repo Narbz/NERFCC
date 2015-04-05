@@ -7,6 +7,18 @@ public class ReturnItem extends Record {
 	private int retid, quantity;
 	private String upc;
 	
+	public ReturnItem(int retid, int quantity, String upc) {
+		super();
+		this.retid = retid;
+		this.quantity = quantity;
+		this.upc = upc;
+	}
+	
+	public ReturnItem()
+	{
+		//Default Constructor
+	}
+	
 	public int getRetid() {
 		return retid;
 	}

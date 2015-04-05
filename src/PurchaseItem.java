@@ -16,6 +16,11 @@ public class PurchaseItem extends Record
         setUPC(upc);
     }
     
+    public PurchaseItem()
+    {
+    	//Default Constructor
+    }
+    
     public int getReceiptID()
     {
         return receiptID;

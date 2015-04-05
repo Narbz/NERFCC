@@ -8,6 +8,18 @@ public class Return extends Record {
 	private int retid, receiptId;
 	private Date date;
 	
+	public Return(int retid, int receiptId, Date date) {
+		super();
+		this.retid = retid;
+		this.receiptId = receiptId;
+		this.date = date;
+	}
+
+	public Return()
+	{
+		//Default constructor
+	}
+	
 	public int getRetid() {
 		return retid;
 	}

@@ -20,6 +20,12 @@ public class Order extends Record {
 		this.expectedDate = expectedDate;
 		this.deliveredDate = deliveredDate;
 	}
+	
+	public Order()
+	{
+		//Default Constructor
+	}
+	
 	/**Standard setters and getters **/
 	public int getRecieptId() {
 		return recieptId;

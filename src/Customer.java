@@ -16,7 +16,10 @@ public class Customer
         setAddress(address);
         setPhone(phone);
     }
-    
+    public Customer()
+    {
+    	//default constructor
+    }
     public String getCID()
     {
         return cid;

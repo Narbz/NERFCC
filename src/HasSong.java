@@ -14,6 +14,11 @@ public class HasSong extends Record
         setSongTitle(stitle);
     }
     
+    public HasSong()
+    {
+    	//default constructor
+    }
+    
     public String getUPC()
     {
         return upc;

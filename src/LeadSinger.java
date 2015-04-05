@@ -14,6 +14,11 @@ public class LeadSinger extends Record
         setSingerName(sname);
     }
     
+    public LeadSinger()
+    {
+    	//Default constructor
+    }
+    
     public String getUPC()
     {
         return upc;

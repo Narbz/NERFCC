@@ -5,6 +5,7 @@ public class Item extends Record{
 	private String type;
 	private String category;
 	private String company;
+	private String singerName;
 	private int year;
 	private float price;
 	private int stock;
@@ -21,6 +22,17 @@ public class Item extends Record{
 		this.price = price;
 		this.stock = stock;
 	}
+	
+	public Item(String singerName)
+	{
+		this.singerName = singerName;
+	}
+	
+	public Item()
+	{
+		//default constructor
+	}
+	
 	/**Standard setters and getters **/
 	public String getUpc() {
 		return upc;
@@ -84,6 +96,12 @@ public class Item extends Record{
 	
 	public void setStock(int stock) {
 		this.stock = stock;
+	}
+	public String getSingerName() {
+		return singerName;
+	}
+	public void setSingerName(String singerName) {
+		this.singerName = singerName;
 	}
 
 	
