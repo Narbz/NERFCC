@@ -25,7 +25,6 @@ public class StateHandler
     
     //Lists for item management
     private ArrayList<Item> VSB, searchedItems;
-    private ArrayList<String> searchItemStrings;
     private ArrayList<PurchaseItem> orderItems, INSFStock;
     private ArrayList<ReturnItem> retItems;
     
@@ -42,9 +41,8 @@ public class StateHandler
         cust = null;
         database = new ams();
         
-        VSB = new ArrayList<Item>(); searchedItems = new ArrayList<Item>();
-        searchItemStrings = new ArrayList<String>();
-        resetSearchItemStrings();
+        searchedItems = new ArrayList<Item>();
+        VSB = new ArrayList<Item>();
         orderItems = new ArrayList<PurchaseItem>();INSFStock = new ArrayList<PurchaseItem>(); 
         retItems = new ArrayList<ReturnItem>();
         order = null;
@@ -615,13 +613,13 @@ public class StateHandler
     }
     
     /**
-     * @author 
+     * @author Curtis
      */
     public State SEARCHSTATE()
     {
         printToScreen("  What category is the item you're searching for? CD/DVD/Music Book/Music Sheet");
         String category = getInput(2);
-        printToScreen("  What is the title of the item you're search for?");
+        printToScreen("  What is the title of the item you're searching for?");
         String title = getInput(20);
         if(category.toLowerCase().equals("cd")){
             printToScreen("  Who is the lead singer of the item you're search for?");
@@ -632,6 +630,15 @@ public class StateHandler
         }
         
         //LIST ITEMS - IMCOMPLETE!!!
+        /*
+        searchedItems.clear():
+        try{
+            
+        }catch(Exception e){
+        }
+        searchedItems = returned
+        printItems(searchedItems); 
+        */
         
         //IF NO ITEMS TRANSITION TO SEARCHFAILED
         /*if(itemlist.length <= 0){
@@ -642,7 +649,7 @@ public class StateHandler
     }
     
     /**
-     * @author Curtis
+     * @author Curtis, Farhoud  //MERGED CHECKQTY AND INSFSTOCK STATES
      */
     public State SELECTITEM()
     {
@@ -650,85 +657,54 @@ public class StateHandler
         String upc = getInput(12);
         if(upc.toLowerCase().equals("s")){
             return st.SEARCHSTATE;
+        }else{
+            Item toSelect = searchByUPC(upc);
+            if(toSelect != null){
+                printToScreen("  Please enter the quantity that you wish to purchase");
+                boolean validQty = false;
+                int qty = -1;
+                while(!validQty){
+                    qty = ec.getNum(getInput(20));
+                    if(qty == -1){
+                        printToScreen("  Please enter a valid quantity");
+                    }else{
+                        validQty = true;
+                    }
+                }
+                if(toSelect.getStock() < qty){
+                    printToScreen("  Sorry there is not enough of that item in stock. ");
+                    printToScreen("  Would you like to accept "+ toSelect.getStock() + " of this item instead? Y/N");
+                    boolean accept = yesno(getInput(1));
+                    if(accept){
+                        qty = toSelect.getStock();
+                    }
+                    else{
+                        return st.SEARCHSTATE;
+                    }
+                }
+                //If there is sufficient stock or the user accepts the available stock
+                printToScreen("  Would you like to add " + qty + " of the item with title: ");
+                printToScreen(toSelect.getItemTitle() + "to the basket? Y/N");
+                boolean addToBasket = yesno(getInput(1));
+                if(addToBasket){
+                    VSB.add(toSelect);
+                    printToScreen("  The item was added to your basket successfully");
+                }else{
+                    printToScreen("  The item was not added to your basket.");
+                }
+            }else{
+                printToScreen("  No items were found.");
+            }
+            printToScreen("  Would you like to search for more items? Y/N");
+            boolean moreItems  = yesno(getInput(1));
+            if(!moreItems){
+                return st.CUSTSTART;
+            }
         }
-        //Search for item with the upc specified
-        printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
-        //Check that the entered qty is an integer between 1 and itemqty
+        
+       
         //Transition
-        return st.CHECKQTY;
-    }
-    
-    /**
-     * @author Curtis
-     */
-    public State CHECKQTY()
-    {
-        if(true/*itemqty <= item.stock*/){
-            return st.ADDTOVSB;
-        }
-        else{
-            return st.INSFSTOCK;
-        }
-        
-    }
-    
-    /**
-     * @author Curtis
-     */
-    public State INSFSTOCK()
-    {
-        printToScreen("  Sorry there is not enough of that item in stock. ");
-        if(true/*item.stock != 0*/){
-            printToScreen("  Would you like to accept "+/*item.stock+*/" of this item instead? Y/N");
-            boolean accept = yesno(getInput(1));
-            if(accept){
-                return st.ADDTOVSB;
-            }
-            else{
-                return st.SEARCHSTATE;
-            }
-        }
-        else{
-            printToScreen("  Sorry, this item is no longer in stock.");
-            return st.SEARCHSTATE;
-        }
-        
-    }
-    
-    /**
-     * @author Curtis
-     */
-    public State SEARCHFAILED()
-    {
-        printToScreen("  No items were found. Would you like to try again? Y/N");
-        boolean again = yesno(getInput(1));
-        if(again){
-            return st.SEARCHSTATE;
-        }else{
-            return st.CUSTSTART;
-        }
-    }
-    
-    /**
-     * @author Curtis (merged VBS SUCCESS/FAIL states in as well)
-     */
-    public State ADDTOVSB()
-    {
-        //printToScreen("  Do you wish to add " +/*qty*/ + " of the item " +/*itemTitle*/ + "? Y/N");
-        boolean add = yesno(getInput(1));
-        if(add){
-            //add item to VSB
-            printToScreen("  The item(s) were successfully added to your basket");
-        }else{
-            printToScreen("  No items were added to your basket.");
-        }   
-        printToScreen("  Would you like to search for more items? Y/N");
-        boolean more = yesno(getInput(1));
-        if(more){
-            return st.SEARCHSTATE;
-        }else{
-            return st.VIEWVSB;
-        }
+        return st.SEARCHSTATE;
     }
     
     /**
@@ -736,22 +712,32 @@ public class StateHandler
      */
     public State VIEWVSB()
     {
-        printToScreen("  Here are the items that are currently in your shopping basket:");
-        //Check to make sure the basket is not empty
-        //Generate report print for the list and print it
-        printToScreen("  If you would like to clear the basket, please enter 'c'.");
-        printToScreen("  If you would like to place an order for these items, please enter 'o'");
-        printToScreen("  If you would like to continue searching for items, please enter 's'.");
-        String choice = getInput(1);
-        if(choice.toLowerCase().equals("c")){
-            return st.CLEARVSB;
-        }else if(choice.toLowerCase().equals("o")){
-            return st.PLACEORDER;
-        }else if(choice.toLowerCase().equals("s")){
-            return st.SEARCHSTATE;
+        if(!VSB.isEmpty()){
+            printToScreen("  Here are the items that are currently in your shopping basket:");
+            printItems(VSB);
+            printToScreen("  If you would like to clear the basket, please enter 'c'.");
+            printToScreen("  If you would like to place an order for these items, please enter 'o'");
+            printToScreen("  If you would like to continue searching for items, please enter 's'.");
+            String choice = getInput(1);
+            if(choice.toLowerCase().equals("c")){
+                return st.CLEARVSB;
+            }else if(choice.toLowerCase().equals("o")){
+                return st.PLACEORDER;
+            }else if(choice.toLowerCase().equals("s")){
+                return st.SEARCHSTATE;
+            }else{
+                printToScreen("  This is not a valid coice.");
+                return st.VIEWVSB;
+            }
         }else{
-            printToScreen("  This is not a valid coice.");
-            return st.VIEWVSB;
+            printToScreen("  Your basket is squeaky clean and shiny, but empty!");
+            printToScreen("  Would you like to search for items to fill it up? Y/N");
+            boolean fill = yesno(getInput(1));
+            if(fill){
+                return st.SEARCHSTATE;
+            }else{
+                return st.CUSTSTART;
+            }
         }
     }
     
@@ -760,7 +746,7 @@ public class StateHandler
      */
     public State CLEARVSB()
     {
-        //clear the basket //VSB.clear();
+        VSB.clear();
         printToScreen("  The basket is now squeaky clean and spotless!");
         return st.VIEWVSB;
     }
@@ -938,27 +924,33 @@ public class StateHandler
         return done;
     }
     
-    public void resetSearchItemStrings()
+    /**
+     * Prints the returned search items
+     * @author Chazz Young
+     */
+    public  void printItems(ArrayList<Item> items)
     {
-        searchItemStrings.clear();
-        String s = "UPC          Totle:              Type  Category   Company             ";
-        s = s + "Year  Price   Stock   ";
-        searchItemStrings.add(s);
-    }
-    
-    public static void printSearch()
-    {
-        System.out.println(" UPC< title, Type, Category, Company, Year, Price, Stock");
-        ArrayList<Item> items = new ArrayList<Item>();
-        items.add(new Item("123456789123", "Michael Jackson: The Essentials", "CD", "Pop", "Epic", 2005, (float)8.99, 20));
-        items.add(new Item("345678912345", "Duran Duran Classic Albums: Rio", "DVD", "Pop", "Eagle Rock Ent", 2008, (float)9.99, 23));
-        items.add(new Item("456789123456", "Billy Idol: Rebel Yell", "CD", "Rock", "Chrysalis", 1982, (float)8.99, 31));
-        items.add(new Item("234567891234", "Aerosmith: Big Ones", "CD", "Rock", "Geffen", 1994, (float)6.99, 30));
+        printToScreen(" UPC, title, Type, Category, Company, Year, Price, Stock");
+        
         for(Item i : items){
             String s = (i.getUpc() + ", " + i.getItemTitle() + ", " + i.getType() + ", " + i.getCategory()); 
             s = s + ", " + i.getCompany() + ", " + i.getYear() + ", " + i.getPrice() + ", " + i.getStock();
-            System.out.println(s);
+            printToScreen(s);
         }
+    }
+    
+    /**
+     * @return the item that matches the UPC specified or null
+     * @author Chazz Young
+     */
+    private Item searchByUPC(String upc)
+    {
+        for(Item i : searchedItems){
+            if(i.getUpc() == upc){
+                return i;
+            }
+        }
+        return null;
     }
 }
 
