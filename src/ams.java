@@ -165,5 +165,37 @@ public class ams {
           //END FOOTER
       }
       
+      public void updateItemStock(Item item) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+          
+          //QUERY TO EXECUTE
+          session.update("ams.updateItemStock", item);
+          //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+      }
+      
+      public void updateOrderDate(Order order) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+          
+          //QUERY TO EXECUTE
+          session.update("ams.updateOrderDate", order);
+          //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+      }
+      
       
 }
