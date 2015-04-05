@@ -79,12 +79,8 @@ public class Applet
             }else if(st == State.SEARCHSTATE){/**@author Curtis*/
                 //no point in writign this without the search method
                 st = sh.SEARCHSTATE();
-            }else if(st == State.SELECTITEM){/**@author Curtis INCOMPLETE!!!!*/
+            }else if(st == State.SELECTITEM){/**@author Curtis MERGED insf AND checkqty*/
                st = sh.SELECTITEM();
-            }else if(st == State.SEARCHFAILED){/**@author Farhoud*/
-                st = sh.SEARCHFAILED();
-            }else if(st == State.ADDTOVSB){/**@author Curtis (merged VBS SUCCESS/FAIstates in as well)*/
-                st = sh.ADDTOVSB();
             }else if(st == State.VIEWVSB){/**@author Curtis*/
                 st = sh.VIEWVSB();
             }else if(st == State.CLEARVSB){/**@author Farhoud*/
