@@ -89,4 +89,21 @@ public class ErrorChecker
         }
         return (float)Math.round(toReturn * 100)/100;
     }
+    
+    /**
+     * Returns the UPC code if it has been formatted correctly, or null otherwise
+     * @author Chazz Young
+     */
+    public static String getUPC(String input)
+    {
+        try{
+            Long.parseLong(input);
+            if(input.length() != 12){
+                return null;
+            }
+        }catch(NumberFormatException e){
+            return null;
+        }
+        return input;
+    }
 }
