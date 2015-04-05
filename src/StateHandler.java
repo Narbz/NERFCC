@@ -198,7 +198,7 @@ public class StateHandler
         if(canReturn){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            //<print list of items>
+            //printPutcahseitem(pitems);
             return st.RETURNITEMS;
         }else{
             printToScreen("  The items in this receipt cannot be returned because");
@@ -218,30 +218,59 @@ public class StateHandler
             printToScreen("  Please select the upc of the item that you"); 
             printToScreen("  wish to return, or 'd' if you are finished");
             String in = getInput(12); //instead of UPC
-            boolean done = (in.toLowerCase().equals("d"));
-            //Search the orders list by upc for a given item
-            if(!done){//If input is NOT equal to d
-                //Validate it is a valdi upc until a valid one is selected
-            }
-            if(!done /*number is in the list*/){
+            if(in.toLowerCase().equals("d")){
+                allItems = true;
+            }else{
+                while(ec.getUPC(in) == null){
+                    printToScreen("  Please enter a valid UPC.");
+                    in = ec.getUPC(getInput(12));
+                }
+                PurchaseItem toReturn = null;
+                while(toReturn == null){
+                    toReturn = searchUPC(orderItems, in);
+                }
+            
+            
                 printToScreen("  Please enter the quantity of items that you wish ");
                 printToScreen("  to return, or ‘a’ for the entire quantity");
-                String qty = getInput();
-                //convert qty to int, success etc
                 
-                //<add to the list of returned items>
-                //<remove items from the order list>
+                int qty = -1;
+                while(qty == -1){ //invalid quantity
+                    in = getInput(12);
+                    if(in.toLowerCase().equals("a")){
+                        qty = toReturn.getQuantity();
+                    }else{
+                        qty = ec.getNum(in);
+                        if(qty == -1){//invalid number
+                            printToScreen("  Please enter a valid number");
+                        }else if(qty > toReturn.getQuantity()){
+                            printToScreen("  Please enter a quantity between 1 and " + toReturn.getQuantity());
+                            qty = -1;
+                        }else{
+                            //valid, break loop
+                        }
+                    }
+                }
+                
+                ReturnItem i = new ReturnItem(1, qty, toReturn.getUPC());
+                retItems.add(i);
+                
+                orderItems.remove(toReturn);
+                toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
+                if(toReturn.getQuantity() > 0){//Add it back as tehre are still more 
+                    orderItems.add(toReturn);
+                }
+                
                 printToScreen("  Do you wish to include more items in this return? Y/N");
-                boolean yn = yesno(getInput(1));
-                if(!yn){
+                boolean moreItems = yesno(getInput(1));
+                if(!moreItems){
                     allItems = true;
                 }else{ //continue
                 }
-            }else{//Done was selected
-                allItems = true;
-            }
+            
             
                 
+            }
         }
         //After all items are completed
         return st.RETURNCONFIRM;
@@ -658,7 +687,7 @@ public class StateHandler
         if(upc.toLowerCase().equals("s")){
             return st.SEARCHSTATE;
         }else{
-            Item toSelect = searchByUPC(upc);
+            Item toSelect = searchByUPC(searchedItems, upc);
             if(toSelect != null){
                 printToScreen("  Please enter the quantity that you wish to purchase");
                 boolean validQty = false;
@@ -926,7 +955,6 @@ public class StateHandler
     }
     
     /**
-     * Prints the returned search items
      * @author Chazz Young
      */
     public  void printItems(ArrayList<Item> items)
@@ -941,13 +969,39 @@ public class StateHandler
     }
     
     /**
+     * @author Chazz Young
+     */
+    public void printPurchaseItem(ArrayList<PurchaseItem> items)
+    {
+        printToScreen("  UPC, qty");
+        for(PurchaseItem i : items){
+            String s = "  " + i.getUPC() + ", " + i.getQuantity();
+            printToScreen(s);
+        }
+    }
+    
+    /**
      * @return the item that matches the UPC specified or null
      * @author Chazz Young
      */
-    private Item searchByUPC(String upc)
+    private Item searchByUPC(ArrayList<Item> items, String upc)
     {
-        for(Item i : searchedItems){
+        for(Item i : items){
             if(i.getUpc() == upc){
+                return i;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * @return the PurchaseItem that matches the UPC specified or null
+     * @author Chazz Young
+     */
+    private PurchaseItem searchUPC(ArrayList<PurchaseItem> items, String upc)
+    {
+        for(PurchaseItem i : items){
+            if(i.getUPC() == upc){
                 return i;
             }
         }
