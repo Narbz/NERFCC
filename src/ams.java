@@ -8,6 +8,7 @@ import org.apache.ibatis.io.Resources;
 
 
 public class ams {
+
        //public static void main(String[] args)
        //        throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
@@ -41,139 +42,10 @@ public class ams {
            //System.out.print(exists);
            //session.close();
       //}
-  
-      /**
-       * IT F*CKING WORKS!!!!
-       * @author Chazz Young
-       */
-      public void insertCustomer(Customer toAdd) throws IOException, SQLException
-      {
-      
-          //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertCustomer", toAdd);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertOrder(Order order) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertOrder", order);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertItem(Item item) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertItem", item);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      public void insertLeadSinger(LeadSinger leadSinger) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertLeadSinger", leadSinger);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertHasSong(HasSong hasSong) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertHasSong", hasSong);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertPurchaseItem(PurchaseItem purchase) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertPurchaseItem", purchase);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertReturn(Return ret) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertReturn", ret);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      
-      public void insertReturnItem(ReturnItem returnItem) throws IOException, SQLException
-      {
-    	  //HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-          
-          //QUERY TO EXECUTE
-          session.insert("ams.insertReturnItem", returnItem);
-          //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-      }
-      /**
+	
+	/***************************************Select Statements **********************/
+    
+	   /**
        * Handling a single Record
        * **/
       public Customer selectCustsomerByCid(String cid) throws IOException, SQLException
@@ -266,4 +138,208 @@ public class ams {
     	  
       }
       
+    //************************INSERT STATEMENTS*******************************
+    /**
+    * 
+    * @author Chazz Young
+    */
+    public void insertCustomer(Customer toAdd) throws IOException, SQLException
+    {
+        
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertCustomer", toAdd);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertOrder(Order order) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertOrder", order);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertItem(Item item) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertItem", item);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertLeadSinger(LeadSinger leadSinger) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertLeadSinger", leadSinger);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertHasSong(HasSong hasSong) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertHasSong", hasSong);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertPurchaseItem(PurchaseItem purchase) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertPurchaseItem", purchase);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertReturn(Return ret) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertReturn", ret);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void insertReturnItem(ReturnItem returnItem) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        session.insert("ams.insertReturnItem", returnItem);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    //********************************END INSERT STATEMENTS*******************************
+
+    
+    //********************************UPDATE STATEMENTS************************************
+    /**
+     * @author Narbeh //INCOMPLETE
+     */
+    public void updateItemStock(String upc, int qtyToAdd) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        //Item item = session.select
+        //session.update("ams.updateItemStock", upc, qtyToAdd);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Curtis //INCOMPLETE
+     */
+    public void updateOrderDate(Date date) throws IOException, SQLException
+    {
+  	  //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        //Order order = session.select
+        //session.update("ams.updateOrderDate", receiptID, date);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    
+    //********************************END UPDATE STATEMENTS*********************************
+
+    //********************************OTHER METHODS***************************************
+    
 }
