@@ -218,6 +218,26 @@ public class ams {
         //END FOOTER
     }
     
+    /**
+     * @author Curtis //INCOMPLETE
+     */
+    public void updateOrderDate(Date date) throws IOException, SQLException
+    {
+  	  //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        //Order order = session.select
+        //session.update("ams.updateOrderDate", receiptID, date);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
     
     //********************************END UPDATE STATEMENTS*********************************
 
