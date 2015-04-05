@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.io.*;
-import java.util.HashSet;
+import java.util.Calendar;
 import java.util.Scanner;
 /**
  * The StateHandler class is used to handle all methods that occur in a given state.
@@ -10,29 +10,48 @@ import java.util.Scanner;
  */
 public class StateHandler
 {
+    //System objects
     private State st;
     private InputReader reader;
+    private ErrorChecker ec;
+    private ams database;
+    
+    //User entity persistent through al lstates
     private Customer cust;
+    
+    //hardcoded manager and clerk accounts
     private final Customer clerk1 = new Customer("Clerk1", "clrk", "1234", null, null);
     private final Customer mgr1 = new Customer("Manager1", "mgr1", "1337", null, null);
-    private ArrayList<Item> VSB, orderItems, INSFStock;
+    
+    //Lists for item management
+    private ArrayList<Item> VSB, searchedItems;
+    private ArrayList<String> searchItemStrings;
+    private ArrayList<PurchaseItem> orderItems, INSFStock;
+    private ArrayList<ReturnItem> retItems;
+    
+    
     private Order order;
     private Item itemToAdd;
     
-    private ErrorChecker ec;
     
-    private ams database;
 
     public StateHandler()
     {
         reader = new InputReader();
+        ec = new ErrorChecker();
         cust = null;
-        VSB = new ArrayList<Item>(); orderItems = new ArrayList<Item>();
-        INSFStock = new ArrayList<Item>();
+        database = new ams();
+        
+        VSB = new ArrayList<Item>(); searchedItems = new ArrayList<Item>();
+        searchItemStrings = new ArrayList<String>();
+        resetSearchItemStrings();
+        orderItems = new ArrayList<PurchaseItem>();INSFStock = new ArrayList<PurchaseItem>(); 
+        retItems = new ArrayList<ReturnItem>();
         order = null;
         itemToAdd = null;
-        database = new ams();
-        ec = new ErrorChecker();
+        
+        
+        
     }
 
     //STATE METHODS
@@ -151,7 +170,7 @@ public class StateHandler
     }
     
     /**
-     * @author 
+     * @author Chazz
      */
     public State CLERKSTART()
     {
@@ -181,7 +200,7 @@ public class StateHandler
         if(canReturn){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            //<print enumerated list of items>
+            //<print list of items>
             return st.RETURNITEMS;
         }else{
             printToScreen("  The items in this receipt cannot be returned because");
@@ -261,6 +280,7 @@ public class StateHandler
         printToScreen("  To generate a sales report for a given date, please enter 'd'.");
         printToScreen("  To generate a sales report for the top selling items, please enter 'n'.");
         printToScreen("  To log out, please enter 'q'");
+        printToScreen("  To exit the program, please enter 'x'");
         String choice = getInput(1);
         if(choice.toLowerCase().equals("a")){
             return st.ADDITEMS;
@@ -272,7 +292,9 @@ public class StateHandler
             return st.NTSRINIT;
         }else if(choice.toLowerCase().equals("q")){
             return st.INITIAL;
-        }else{//Do nothing
+        }else if(choice.toLowerCase().equals("x")){
+            return st.EXIT;
+        } else{//Do nothing
             printToScreen("  This is not a valid option. Please try again.");   
             return st.MGRSTART;
         }
@@ -285,11 +307,19 @@ public class StateHandler
     {
         printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
         String upc = getInput(12);
-        printToScreen("  Please enter the quantity: ");
-        
-        if(true/*isExistUPC*/){
-            int qty = Integer.parseInt(getInput());
-            //Check to ensure that this parses correctly
+        //check to ensure that the upc exists
+        boolean upcExists = false;
+        if(upcExists/*isExistUPC*/){
+            boolean invalidNum = true;
+            while(invalidNum){
+                printToScreen("  Please enter the quantity: ");
+                int qty = ec.getNum(getInput(9));//no more than 1 billion of one item
+                if(qty == -1){
+                    printToScreen("  Please enter a positive integer");
+                }else{
+                    invalidNum = false;
+                }
+            }
             //execute updateItemStock
             if(true/*successful*/){
                 printToScreen("  The database was successfully updated!");
@@ -309,22 +339,85 @@ public class StateHandler
             if(addToInv){//Adding a ne witem to the inventory
                 printToScreen("  Please enter the TITLE of the item: ");
                 String itemTitle = getInput(40);
-                printToScreen("  Please enter the TYPE of the item: ");
-                String type = getInput(3);
+                printToScreen("  Please enter the TYPE of the item: CD/DVD");
+                
+                //Valid type
+                boolean validType = false;
+                String type = "";
+                while(!validType){
+                    type = getInput(3);
+                    validType = ec.isCDDVD(type);
+                    if(!validType){
+                        printToScreen("  The is not a valid type. Please enter 'CD' or 'DVD'");
+                    }
+                }
+                
+                //valid category
                 printToScreen("  Please enter the CATEGORY of the item: ");
-                String category = getInput(10);
-                //Check to ensure it is a particular type? Perhaps enum?
+                String category = "";
+                boolean validCategory = false;
+                while(!validCategory){
+                    category = getInput(20);
+                    validCategory = ec.isValidCategory(category);
+                    if(!validCategory){
+                        printToScreen("  This is not a valid category. Please enter 'rock', 'pop',");
+                        printToScreen("  'rap', 'country', 'classical', 'new age' or  'instrumental'");
+                    }
+                }
 
                 printToScreen("  Please enter the COMPANY the item came from:  ");
                 String company = getInput(20);
+                
+                //check price
                 printToScreen("  Please enter the selling PRICE: ");
-                double price = Double.parseDouble(getInput());
+                float price = -1;
+                boolean validPrice = false;
+                while(!validPrice){
+                    price = ec.getPrice(getInput(20))   ;
+                    if(price == -1){
+                        printToScreen("  This is not a valid price. Please enter a positive price ");
+                    }else{
+                        validPrice = true;
+                    }
+                }
                 //Check to ensure that it is parsed correctly
                 printToScreen("  Please enter the YEAR the item was created: ");
-                int year = Integer.parseInt(getInput(4));
+                boolean validYear = false;
+                int year = -1;
+                while(!validYear){
+                    year = ec.getNum(getInput(4));
+                    //Check to make sure the year is not in the future?
+                    if(year == -1){
+                        printToScreen("  Please enter a valid year.");
+                    }else{
+                        validYear = true;
+                    }
+                }
+                
+                printToScreen("  Please enter the initial quantity of the item.");
+                int qty = -1;
+                boolean validQty = false;
+                while(!validQty){
+                    qty = ec.getNum(getInput(9));
+                    if(qty == -1){
+                        printToScreen("  Please enter a valid quantity");
+                    }else{
+                        validQty = true;
+                    }
+                }
+                
                 printToScreen("  Now attemting to add the new item into the database.");
-                //insert new item into db
-                boolean success = true;
+                //String upc, String itemTitle, String type, String category,
+                //String company, int year, float price, int stock
+                Item newItem = new Item(upc, itemTitle, type, category, company, year, price, qty);
+                boolean success = false;
+                try{
+                    database.insertItem(newItem);
+                    success = true;
+                }catch(Exception e){
+                    printToScreen(e.getMessage());
+                }
+                
                 if(success){
                     printToScreen("  The item has been successfully aded to the database!");
                 }else{
@@ -526,25 +619,25 @@ public class StateHandler
      */
     public State SEARCHSTATE()
     {
-    	printToScreen("  What category is the item you're searching for? CD/DVD/Music Book/Music Sheet");
-    	String category = getInput(2);
-    	printToScreen("  What is the title of the item you're search for?");
-    	String title = getInput(20);
-    	if(category.toLowerCase().equals("cd")){
-    		printToScreen("  Who is the lead singer of the item you're search for?");
-    		String leadsinger = getInput(20);
-    	}
-    	if(category.equals("") && title.equals("")){
-    		return st.SEARCHFAILED;
-    	}
-    	
-    	//LIST ITEMS - IMCOMPLETE!!!
-    	
-    	//IF NO ITEMS TRANSITION TO SEARCHFAILED
-    	/*if(itemlist.length <= 0){
-    		return st.SEARCHFAILED;
-    	}*/
-    	
+        printToScreen("  What category is the item you're searching for? CD/DVD/Music Book/Music Sheet");
+        String category = getInput(2);
+        printToScreen("  What is the title of the item you're search for?");
+        String title = getInput(20);
+        if(category.toLowerCase().equals("cd")){
+            printToScreen("  Who is the lead singer of the item you're search for?");
+            String leadsinger = getInput(20);
+        }
+        if(category.equals("") && title.equals("")){
+            return st.SEARCHFAILED;
+        }
+        
+        //LIST ITEMS - IMCOMPLETE!!!
+        
+        //IF NO ITEMS TRANSITION TO SEARCHFAILED
+        /*if(itemlist.length <= 0){
+            return st.SEARCHFAILED;
+        }*/
+        
         return st.SELECTITEM;
     }
     
@@ -556,7 +649,7 @@ public class StateHandler
         printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
         if(upc.toLowerCase().equals("s")){
-        	return st.SEARCHSTATE;
+            return st.SEARCHSTATE;
         }
         //Search for item with the upc specified
         printToScreen("  Please enter the quantity that you wish to purchase (between 1 and "/* + itemqty*/);
@@ -570,12 +663,12 @@ public class StateHandler
      */
     public State CHECKQTY()
     {
-    	if(true/*itemqty <= item.stock*/){
-    		return st.ADDTOVSB;
-    	}
-    	else{
-    		return st.INSFSTOCK;
-    	}
+        if(true/*itemqty <= item.stock*/){
+            return st.ADDTOVSB;
+        }
+        else{
+            return st.INSFSTOCK;
+        }
         
     }
     
@@ -584,22 +677,22 @@ public class StateHandler
      */
     public State INSFSTOCK()
     {
-    	printToScreen("  Sorry there is not enough of that item in stock. ");
-    	if(true/*item.stock != 0*/){
-    		printToScreen("  Would you like to accept "+/*item.stock+*/" of this item instead? Y/N");
-    		boolean accept = yesno(getInput(1));
-    		if(accept){
-    			return st.ADDTOVSB;
-    		}
-    		else{
-    			return st.SEARCHSTATE;
-    		}
-    	}
-    	else{
-    		printToScreen("  Sorry, this item is no longer in stock.");
-    		return st.SEARCHSTATE;
-    	}
-    	
+        printToScreen("  Sorry there is not enough of that item in stock. ");
+        if(true/*item.stock != 0*/){
+            printToScreen("  Would you like to accept "+/*item.stock+*/" of this item instead? Y/N");
+            boolean accept = yesno(getInput(1));
+            if(accept){
+                return st.ADDTOVSB;
+            }
+            else{
+                return st.SEARCHSTATE;
+            }
+        }
+        else{
+            printToScreen("  Sorry, this item is no longer in stock.");
+            return st.SEARCHSTATE;
+        }
+        
     }
     
     /**
@@ -843,6 +936,29 @@ public class StateHandler
             }
         }
         return done;
+    }
+    
+    public void resetSearchItemStrings()
+    {
+        searchItemStrings.clear();
+        String s = "UPC          Totle:              Type  Category   Company             ";
+        s = s + "Year  Price   Stock   ";
+        searchItemStrings.add(s);
+    }
+    
+    public static void printSearch()
+    {
+        System.out.println(" UPC< title, Type, Category, Company, Year, Price, Stock");
+        ArrayList<Item> items = new ArrayList<Item>();
+        items.add(new Item("123456789123", "Michael Jackson: The Essentials", "CD", "Pop", "Epic", 2005, (float)8.99, 20));
+        items.add(new Item("345678912345", "Duran Duran Classic Albums: Rio", "DVD", "Pop", "Eagle Rock Ent", 2008, (float)9.99, 23));
+        items.add(new Item("456789123456", "Billy Idol: Rebel Yell", "CD", "Rock", "Chrysalis", 1982, (float)8.99, 31));
+        items.add(new Item("234567891234", "Aerosmith: Big Ones", "CD", "Rock", "Geffen", 1994, (float)6.99, 30));
+        for(Item i : items){
+            String s = (i.getUpc() + ", " + i.getItemTitle() + ", " + i.getType() + ", " + i.getCategory()); 
+            s = s + ", " + i.getCompany() + ", " + i.getYear() + ", " + i.getPrice() + ", " + i.getStock();
+            System.out.println(s);
+        }
     }
 }
 
