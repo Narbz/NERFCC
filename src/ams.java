@@ -290,7 +290,7 @@ public class ams {
       public List<DailySalesReport> selectDailySalesReport(String date)  throws IOException, SQLException
       {
     	  float runningTotalForTheDay = 0;
-    	//HEADER
+    	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
           SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
           SqlSession session = smc.openSession();

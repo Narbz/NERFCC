@@ -84,25 +84,30 @@ public class StateHandler
             cust = mgr1;
             return st.MGRSTART;
         }
-        //Method to retrieve username from SQL database 
-        //Assume an id and type is returned
-        if(true/*c == null*/){
-           //Print invalid user login
-           return st.LOGIN;
-        }else{
-            //Print successful login message
-            printToScreen("  Welcome " + username + "!");
-            if(true/* c.type == MANAGER*/){
-                return st.MGRSTART;
-            }else if(true/*c.type == CLERK*/){
-                return st.CLERKSTART;
-            }else if(true/*c.type == CUSTOMER*/){
-                return st.CUSTSTART;
-            }else{
-                //print error message, invalid user type
-            }
+        
+        int log = -1;
+        try{
+            log = database.verifyUserLogin(username, password); 
+        }catch(Exception e){
+            printToScreen(e.getMessage());
         }
-        return null; //dummy return, it will never get here
+        
+        if(log == 0){
+            printToScreen("  Sorry, but the username and password doesn't match in the database.");
+            return st.LOGIN;
+        }else if(log == 1){
+            printToScreen("  Welcome " + username + "!");
+            try{
+                cust = database.selectCustsomerByCid(username);
+            }catch(Exception e){
+                printToScreen(e.getMessage());
+                return st.EXIT;
+            }
+            return st.CUSTSTART;
+        }else{
+            printToScreen("  The system failed to connect to the database. Now exsiting");
+            return st.EXIT;
+        }
     }
     
     /**
@@ -117,13 +122,13 @@ public class StateHandler
         String address = getInput(40);
         printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
         String phonenum = getInput(10);
-        boolean invalidNum = ec.checkPhoneNum(phonenum);
-        while(invalidNum/*improperPhoneNumber*/){
+        boolean validNum = ec.checkPhoneNum(phonenum);
+        while(!validNum){
             printToScreen("  The phone number you enter is not a valid phone number.");  
             printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
             printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
-            phonenum = getInput(12);
-            invalidNum = ec.checkPhoneNum(phonenum);
+            phonenum = getInput(10);
+            validNum = ec.checkPhoneNum(phonenum);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         String username = getInput(50);
@@ -214,7 +219,7 @@ public class StateHandler
     {
         boolean allItems = false;
         while(!allItems){//Add more items to return
-            //<print items in the order>
+            printPurchaseItems(orderItems);
             printToScreen("  Please select the upc of the item that you"); 
             printToScreen("  wish to return, or 'd' if you are finished");
             String in = getInput(12); //instead of UPC
@@ -270,6 +275,9 @@ public class StateHandler
             
             
                 
+            }
+            if(orderItems.isEmpty()){
+                allItems = true;
             }
         }
         //After all items are completed
@@ -334,21 +342,36 @@ public class StateHandler
     {
         printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
         String upc = getInput(12);
+        itemToAdd = null;
+        try{
+            itemToAdd = database.selectItemByUpc(upc);
+        }catch(Exception e){
+            printToScreen(e.getMessage());
+        }
         //check to ensure that the upc exists
-        boolean upcExists = false;
-        if(upcExists/*isExistUPC*/){
-            boolean invalidNum = true;
-            while(invalidNum){
-                printToScreen("  Please enter the quantity: ");
-                int qty = ec.getNum(getInput(9));//no more than 1 billion of one item
+        
+        if(itemToAdd != null){
+            boolean validNum = false;
+            int qty = -1;
+            while(!validNum){
+                printToScreen("  Please enter the quantity that you would like to add: ");
+                qty = ec.getNum(getInput(9));//no more than 1 billion of one item
                 if(qty == -1){
                     printToScreen("  Please enter a positive integer");
                 }else{
-                    invalidNum = false;
+                    validNum = true;
                 }
             }
-            //execute updateItemStock
-            if(true/*successful*/){
+            itemToAdd.setStock(itemToAdd.getStock() + qty);
+            boolean successful = false;
+            try{
+                database.updateItemStock(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()));
+                successful = true;
+            }catch(Exception e){
+                printToScreen(e.getMessage());
+            }
+            
+            if(successful){
                 printToScreen("  The database was successfully updated!");
                 printToScreen("  Would you like to add more items? Y/N");
                 boolean moreItems = yesno(getInput(1));
@@ -971,11 +994,23 @@ public class StateHandler
     /**
      * @author Chazz Young
      */
-    public void printPurchaseItem(ArrayList<PurchaseItem> items)
+    public void printPurchaseItems(ArrayList<PurchaseItem> items)
     {
         printToScreen("  UPC, qty");
         for(PurchaseItem i : items){
             String s = "  " + i.getUPC() + ", " + i.getQuantity();
+            printToScreen(s);
+        }
+    }
+    
+    /**
+     * @author Chass Young
+     */
+    public void printReturnItems(ArrayList<ReturnItem> items)
+    {
+        printToScreen("  UPC, qty");
+        for(ReturnItem i : items){
+            String s = "  " + i.getUpc() + ", " + i.getQuantity();
             printToScreen(s);
         }
     }
