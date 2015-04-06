@@ -31,6 +31,7 @@ public class StateHandler
     
     private Order order;
     private Item itemToAdd;
+    private Return ret;
     
     
 
@@ -163,27 +164,7 @@ public class StateHandler
         }catch(Exception e){
             printToScreen(e.getMessage());
         }
-        /*
-        printToScreen("  Please review your information to ensure it is correct.");
-        printToScreen("  If amendments need to be made please enter the number corresponding");
-        printToScreen("  to the field you would like to edit. Enter fin if you are satisfie");
-        String toEdit = getInput();
-        //<system displays fields enter by user in a numbered list format>
-        /*boolean fin = false;
-        if(true/*user enters fin){
-            fin = true;
-        }
-        while(!fin){
-            <user enters field number>
-            getFieldName + prevEnteredField
-            printToScreen(" please enter the new information: ");
-            <user enters new information>
-            printToScreen("  Do you want to make any more changes" Enter fin if"); 
-            printToScreen("  satisfied, otherwise enter N if you have further edits to make");
-            if(user entered fin)
-            fin = true
-        }*/
-        //Add customer to db
+        
         cust = newCust;
         return st.CUSTSTART;
          
@@ -198,7 +179,7 @@ public class StateHandler
         printToScreen("  If you wish to log out, please enter 'q'");
         String choice = getInput(1);
         if(choice.toLowerCase().equals("r")){
-            return st.RETURNITEMS;  
+            return st.PROCESSRETURN;  
         }else if(choice.toLowerCase().equals("q")){
             return st.INITIAL;
         }else{//do nothing
@@ -215,17 +196,25 @@ public class StateHandler
         printToScreen("  You have chosen to process a return.");
         printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
         String rid = getInput();
-        //<query database for valid receipt id and whether or not items can be returned>
-        boolean canReturn = true;//<aboveanswer;
-        if(canReturn){
+        int canReturn = -1;
+        try{
+            canReturn = database.selectReceiptToVerifyDate(rid);
+        }catch(Exception e){
+            printToScreen(e.getMessage());
+        }
+
+        if(canReturn == 1){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            //printPutcahseitem(pitems);
+            
             return st.RETURNITEMS;
-        }else{
+        }else if(canReturn == 0){
             printToScreen("  The items in this receipt cannot be returned because");
             printToScreen("  it either doesn't exist or it is over 15 days old");
             return st.CLERKSTART;
+        }else{
+            printToScreen("  The program failed to connect to the database.");
+            return st.EXIT;
         }
     }
     
@@ -473,13 +462,51 @@ public class StateHandler
                     }
                 }
                 
+                //Check to see fi teh item has an associated lead singer
+                printToScreen("  Does this item have an associated lead singer? Y/N");
+                boolean hasLeadSinger = yesno(getInput(1));
+                String sname = "";
+                if(hasLeadSinger){
+                    printToScreen("  Please enter name of the lead singers.");
+                    sname = getInput(40);
+                }
+                
+                printToScreen("  Does this item have an associated list of songs? Y/N");
+                boolean hasSongs = yesno(getInput(1));
+                ArrayList<String> songs = new ArrayList<String>();
+                if(hasSongs){
+                    boolean allSongs = false;
+                    while(!allSongs){
+                        printToScreen("  Please enter the title of the next song");
+                        String nextSong = getInput(50);
+                        if(!songs.contains(nextSong)){
+                            printToScreen("  This song has already been added to the song list");
+                        }else{
+                            songs.add(nextSong);
+                        }
+                        printToScreen("  Are there any more songs that you would like to add? Y/N");
+                        allSongs = !(yesno(getInput(1))); //If there are more songs, then yes, keep adding
+                    }
+                }
+                
                 printToScreen("  Now attemting to add the new item into the database.");
                 //String upc, String itemTitle, String type, String category,
                 //String company, int year, float price, int stock
                 Item newItem = new Item(upc, itemTitle, type, category, company, year, price, qty);
                 boolean success = false;
                 try{
-                    database.insertItem(newItem);
+                    database.insertItem(newItem); //First the item
+                    if(hasLeadSinger){//next, the singer
+                        LeadSinger singer = new LeadSinger(upc, sname);
+                        database.insertLeadSinger(singer);
+                    }
+                    
+                    if(hasSongs){//finally, the lsit of songs
+                        for(String s : songs){
+                            HasSong newSong = new HasSong(upc, s);
+                            database.insertHasSong(newSong);
+                        }
+                    }
                     success = true;
                 }catch(Exception e){
                     printToScreen(e.getMessage());
@@ -498,21 +525,6 @@ public class StateHandler
                 
             
             }//else do nothing and cycle back     
-            /*printToScreen("  Please review the information you have entered.  Would like to make edits? Y/N: ");
-            //<print off information>
-            boolean done = yesno(getInput());
-            while(!done){
-                <user enters field number>
-                getFieldName + prevEnteredField
-                " please enter the new information: "
-                <user enters new information>
-                "  do you want to make any more changes? Y/N"
-                if(user entered Y){
-                    done= true;
-                }
-            }
-            
-                */
             return st.MGRSTART;
         }
         return null;//dummy statement, unreachable
@@ -701,6 +713,7 @@ public class StateHandler
                 }
             }
         }
+        printToScreen("Would you like to search by item title? Y/N");
         boolean validCategory = false;
        
         printToScreen("  What is the title of the item you're searching for?");
