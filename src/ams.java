@@ -10,8 +10,8 @@ import org.apache.ibatis.io.Resources;
 public class ams {
 
 	
-       //public static void main(String[] args)
-        //       throws IOException,SQLException{
+       public static void main(String[] args)
+               throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
            //Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
            //SqlSessionFactory smc =  new SqlSessionFactoryBuilder().build(rd);
@@ -45,9 +45,9 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           //System.out.print(selectPurchases(1).get(1));
+           System.out.print(selectPurchases(1).size());
            //session.close();
-      //}
+      }
 	
 	/***************************************Select Statements **********************/
     
@@ -315,23 +315,42 @@ public class ams {
           return item_list;
       }
       
-      public static List<String> selectPurchases(int receiptId) throws IOException, SQLException
+      public static List<PurchaseItem> selectPurchases(int receiptId) throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
           SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
           SqlSession session = smc.openSession();
           //END HEADER
-    	  List<String> upc_list;
+    	  List<PurchaseItem> purchase_list;
     	  
-    	  upc_list =  session.selectList("ams.selectPurchases", receiptId);
+    	  purchase_list =  session.selectList("ams.selectPurchases", receiptId);
     	  
     	  //FOOTER
           session.commit();
           session.close();
           //END FOOTER
           
-          return upc_list;
+          return purchase_list;
+      }
+      
+      public static List<ReturnItem> selectReturnItems(int retid) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  List<ReturnItem> return_list;
+    	  
+    	  return_list =  session.selectList("ams.selectReturnItems", retid);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return return_list;
       }
       
       public static int selectLatestPurchaseReceiptId() throws IOException, SQLException

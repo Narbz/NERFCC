@@ -86,7 +86,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<result property="receiptId" column="receiptId"/>
 </resultMap>
 
-<resultMap id="returnItem" type="Return">
+<resultMap id="returnItem" type="ReturnItem">
 	<result property="retid" column="retid"/>
 	<result property="upc" column="upc"/>
 	<result property="quantity" column="quantity"/>
@@ -231,10 +231,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	where receiptId = #{receiptId}
 </select>
 
-<select id="selectPurchases" resultType="String">
-	SELECT upc
+<select id="selectPurchases" resultMap="purchaseItem">
+	SELECT *
 	FROM PurchaseItem
 	WHERE receiptId = #{receiptId}
+</select>
+
+<select id="selectReturnItems" resultMap="returnItem">
+	SELECT *
+	FROM ReturnItem
+	WHERE retid = #{reiId}
 </select>
 
 <select id="selectLatestPurchaseReceiptId" resultType="int">
