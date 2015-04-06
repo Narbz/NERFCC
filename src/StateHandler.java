@@ -131,12 +131,29 @@ public class StateHandler
             validNum = ec.checkPhoneNum(phonenum);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
-        String username = getInput(50);
-        boolean invalidUser = false;
-        //TODO sql query to check if user name already exists
-        while(invalidUser /*userNameExists*/){ 
-            printToScreen("  Sorry, that username is already taken. Please enter another: ");
+        boolean validUser = false;
+        
+        String username = "";
+        
+        
+        while(!validUser){ 
             username = getInput(50);
+            int exists = -1;
+            try{
+                exists = database.verifyUserExists(username);
+            }catch(Exception e){
+                printToScreen(e.getMessage());
+            }
+            
+            if(exists == 1){
+                printToScreen("  Sorry, that username is already taken. Please enter another: ");;
+            }else if(exists == 0){
+                printToScreen("  Excellent, this username is free for the taking!");
+                validUser = true;
+            }else{
+                printToScreen("  The system failed t oconnect to the database");
+                return st.EXIT;
+            }
         }
         printToScreen("  Please enter your password: ");
         String password = getInput(40);
@@ -669,8 +686,23 @@ public class StateHandler
      */
     public State SEARCHSTATE()
     {
-        printToScreen("  What category is the item you're searching for? CD/DVD/Music Book/Music Sheet");
-        String category = getInput(2);
+        printToScreen("  Would you like to search by category? Y/N");
+        String category = "";
+        boolean sbc = yesno(getInput(1));
+        if(sbc){
+            printToScreen("  Please enter one of the following categories: 'pop', 'rock', ");
+            printToScreen("  'rap', 'country', 'classical', 'new age', or 'instrumental'/");
+            boolean validCategory = false;
+            while(!validCategory){
+                category = getInput(12);
+                validCategory = ec.isValidCategory(category);
+                if(!validCategory){
+                    printToScreen("  This is not a vali dcategory.");
+                }
+            }
+        }
+        boolean validCategory = false;
+       
         printToScreen("  What is the title of the item you're searching for?");
         String title = getInput(20);
         if(category.toLowerCase().equals("cd")){
