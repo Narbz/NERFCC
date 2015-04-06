@@ -23,19 +23,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <result property="singerName" column="singerName"/>
 </resultMap>
 
-<resultMap id="itemSearch" type="Item">
-	<constructor>
-		<arg column="singerName" javaType="String"/>
-	</constructor>
+<resultMap id="itemSearch" type="SearchItem">
 	<result property="upc" column="upc"/>
 	<result property="itemTitle" column="itemTitle"/>
-	<!-- <association property="singerName" column="singerName" resultMap="leadSinger"/> -->
+	<result property="singerName" column="singerName"/>
 	<result property="type" column="type"/>
 	<result property="category" column="category"/>
 	<result property="company" column="company"/>
 	<result property="year" column="year"/>
 	<result property="price" column="price"/>
 	<result property="stock" column="stock"/>
+</resultMap>
+
+<resultMap id="topNItems" type="SearchTopNitems">
+	<result property="upc" column="upc"/>
+	<result property="Title" column="Title"/>
+	<result property="category" column="category"/>
+	<result property="stock" column="stock"/>
+	<result property="Sold" column="Sold"/>
+</resultMap>
+
+<resultMap id="dailySalesReport" type="DailySalesReport">
+	<result property="upc" column="upc"/>
+	<result property="category" column="category"/>
+	<result property="price" column="price"/>
+	<result property="Sold" column="Sold"/>
+	<result property="Total" column="Total"/>
 </resultMap>
 
 <resultMap id="order" type="Order">
@@ -169,19 +182,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	WHERE I.upc = #{upc}
 </select>
 
-<select id="selectDailySalesReport" resultType="map">
-	SELECT i.upc, i.category, i.price,  sum(quantity) as Sold, round((i.price*sum(quantity)), 2) as total 
+<select id="selectDailySalesReport" resultMap="dailySalesReport">
+	SELECT i.upc, i.category, i.price,  sum(quantity) as Sold, round((i.price*sum(quantity)), 2) as Total 
 	FROM Orders o, PurchaseItem p, item i 
 	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date}
 	GROUP BY upc
 </select>
 
-<select id="selectTopNItems" resultType="map">
+<select id="selectTopNItems" resultMap="topNItems">
 	SELECT i.upc, i.itemTitle as Title, i.category, i.stock, sum(quantity) as Sold 
 	FROM Orders o, PurchaseItem p, item i 
 	WHERE o.receiptId = p.receiptId AND i.upc = p.upc AND o.date = #{date} 
 	GROUP BY upc 
-	ORDER BY sold DESC 
+	ORDER BY Sold DESC 
 	Limit #{n};
 </select>
 
@@ -209,7 +222,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <select id="selectItemByTitle" resultMap="item">
 	SELECT *
 	FROM Item
-	WHERE itemTitle = #{itemTitle}
+	WHERE itemTitle like #{itemTitle}
+</select>
+
+<select id="selectRetId" resultType="int">
+	select retid
+	from Returns
+	where receiptId = #{receiptId}
 </select>
 
 <!--Update Statements-->
@@ -221,7 +240,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <update id="updateOrderDate">
 	UPDATE Orders
-	SET expectedDate = #{expectedDate}
+	SET deliveredDate = #{deliveredDate}
 	WHERE receiptId = #{receiptId}
 </update>
 

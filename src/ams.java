@@ -9,14 +9,15 @@ import org.apache.ibatis.io.Resources;
 
 public class ams {
 
-       //public static void main(String[] args)
+	
+      // public static void main(String[] args)
        //        throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
            //Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
            //SqlSessionFactory smc =  new SqlSessionFactoryBuilder().build(rd);
            //String test = "123456789123";
            //Customer c = null;
-         //  int exists = 0;
+           //int exists = 0;
            /*create a dummy item to insert*/
            //Item i = new Item("111122223333", "testItem", "CD", "testCat",
             //      "testComp", 1991, 10, 10);
@@ -24,14 +25,19 @@ public class ams {
            //Customer c = new Customer("HJones", "Harrold Jones", "azure", "1234 noname street, nowhereland", "6041478952");
            
            /*open s database session*/  
-           //SqlSession session = smc.openSession();
-           //List<Item> item_list;
-          //Map<String, String> map = new HashMap<String, String>();
-     	  //map.put("cid", "BKingston");
-     	  //map.put("password", "iliketacos");
-     	  //exists =  session.selectOne("ams.selectCustomerLogin", map);
+          // SqlSession session = smc.openSession();
+           //exists = session.selectOne("ams.selectReceiptToVerifyDate", '1');
+         //  List<DailySalesReport> item_list = selectDailySalesReport("2015-03-09");
+           //Map<String, Object> map = new HashMap<String, Object>();
+           //map.put("date", "2015-03-09");
+     	   //map.put("n", 1);
+           // Map<String, String> map = new HashMap<String, String>();
+     	 // map.put("deliveredDate", "2015-04-24");
+     	 // map.put("receiptId", "5");
+     	  //exists =  session.selectOne("ams.selectItemStock", map);
            //exists = session.selectOne("ams.selectCustomerExists", "Jooper");
-     	   //item_list =  session.selectList("ams.selectItemByCategory", "pop");
+           //item_list = session.selectList("ams.selectTopNItems", map);
+           //item_list =  session.selectList("ams.selectItemByCategory", "pop");
            //c =  (Customer)session.selectOne("ams.selectCustomer", "Cooper");
            //i =  (Item)session.selectOne("ams.selectItemSearch", test);
            /* This would insert one record in Item table. Adjust as you want to play around. First parameter is highlighting what sql statement we want(remember those special id's we defined).  ams is a namespace i defined in the xml. Second parameter is the object to give to myBatis*/
@@ -39,9 +45,9 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           //System.out.print(exists);
+           //System.out.print(selectItemByTitle("%ero%").size());
            //session.close();
-      //}
+     // }
 	
 	/***************************************Select Statements **********************/
     
@@ -67,6 +73,47 @@ public class ams {
           return c;
     	     	  
       }
+      
+      public Item selectItemByUpc(String upc) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  Item i = null;
+    	  
+    	  i =  (Item)session.selectOne("ams.selectItem", upc);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return i;
+    	     	  
+      }
+      //Since we are using a 'like' in the actual sql, any title input by the user must have a '%' concatenated to the front and end of that string
+      public List<Item> selectItemByTitle(String itemTitle) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  List<Item> i = null;
+    	  
+    	  i =  session.selectList("ams.selectItemByTitle", itemTitle);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return i;
+    	     	  
+      }
+      
       
       /**
        * Handling a list of records
@@ -136,6 +183,136 @@ public class ams {
           
           return userExists;
     	  
+      }
+      
+      public int selectItemStock(String upc) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int stock = 0;
+    	  
+    	  stock =  session.selectOne("ams.selectItemStock", upc);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return stock;
+    	     	  
+      }
+      
+      public int selectReceiptToVerifyDate(String receiptId) throws IOException, SQLException
+      {
+    	  //HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int isAcceptableDate = 0;
+    	  
+    	  isAcceptableDate =  session.selectOne("ams.selectReceiptToVerifyDate", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return isAcceptableDate;
+    	     	  
+      }
+      
+      public int selectRetId(int receiptId) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int retid = 0;
+    	  
+    	  retid =  session.selectOne("ams.selectRetId", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return retid;
+      }
+      
+      public List<SearchItem> selectItemSearch(String category, String itemTitle, String singerName)  throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  List<SearchItem> item_list;
+    	  Map<String, String> map = new HashMap<String, String>();
+    	  map.put("category", category);
+    	  map.put("itemTitle", itemTitle);
+    	  map.put("singerName", singerName);
+    	  item_list =  session.selectList("ams.selectItemSearch", map);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return item_list;
+      }
+      
+      public List<SearchTopNitems> selectTopNItems(int n, String date)  throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+          List<SearchTopNitems> item_list;
+    	  Map<String, Object> map = new HashMap<String, Object>();
+    	  map.put("date", date);
+    	  map.put("n", n);
+    	  item_list =  session.selectList("ams.selectTopNItems", map);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return item_list;
+      }
+      
+      public List<DailySalesReport> selectDailySalesReport(String date)  throws IOException, SQLException
+      {
+    	  float runningTotalForTheDay = 0;
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+          List<DailySalesReport> item_list;
+    	  item_list =  session.selectList("ams.selectDailySalesReport", date);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          //Now we must sum the total sales from each record, and insert it as an item in the list before returning 
+          for(int i = 0; i < item_list.size(); i++)
+          {
+        	  runningTotalForTheDay += item_list.get(i).getTotal();
+          }
+          DailySalesReport s = new DailySalesReport();
+          s.setTotal(runningTotalForTheDay);
+          //add to the end of the list
+          item_list.add(s);
+          return item_list;
       }
       
     //************************INSERT STATEMENTS*******************************
@@ -298,9 +475,9 @@ public class ams {
     
     //********************************UPDATE STATEMENTS************************************
     /**
-     * @author Narbeh //INCOMPLETE
+     * @author Narbeh
      */
-    public void updateItemStock(String upc, int qtyToAdd) throws IOException, SQLException
+    public void updateItemStock(String upc, String qtyToAdd) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -310,7 +487,10 @@ public class ams {
         
         //QUERY TO EXECUTE
         //Item item = session.select
-        //session.update("ams.updateItemStock", upc, qtyToAdd);
+        Map<String, String> map = new HashMap<String, String>();
+  	  	map.put("cid", upc);
+  	  	map.put("password", qtyToAdd);
+        session.update("ams.updateItemStock", map);
         //FOOTER
         session.commit();
         session.close();
@@ -318,9 +498,9 @@ public class ams {
     }
     
     /**
-     * @author Curtis //INCOMPLETE
+     * @author Curtis 
      */
-    public void updateOrderDate(Date date) throws IOException, SQLException
+    public void updateOrderDate(String userDate, String receiptId) throws IOException, SQLException
     {
   	  //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -330,7 +510,10 @@ public class ams {
         
         //QUERY TO EXECUTE
         //Order order = session.select
-        //session.update("ams.updateOrderDate", receiptID, date);
+        Map<String, String> map = new HashMap<String, String>();
+  	  	map.put("date", userDate);
+  	  	map.put("receiptId", receiptId);
+        session.update("ams.updateOrderDate", map);
         //FOOTER
         session.commit();
         session.close();
