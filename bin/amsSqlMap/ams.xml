@@ -266,6 +266,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	WHERE upc = #{upc}
 </update>
 
+<update id="updateItemStockAndPrice">
+	UPDATE Item
+	SET stock = #{stock}, price = #{price}
+	WHERE upc = #{upc}
+</update>
+
 <update id="updateOrderDate">
 	UPDATE Orders
 	SET deliveredDate = #{deliveredDate}

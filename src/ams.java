@@ -10,8 +10,8 @@ import org.apache.ibatis.io.Resources;
 public class ams {
 
 	
-       public static void main(String[] args)
-               throws IOException,SQLException{
+      // public static void main(String[] args)
+      //         throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
            //Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
            //SqlSessionFactory smc =  new SqlSessionFactoryBuilder().build(rd);
@@ -45,9 +45,10 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           System.out.print(selectPurchases(1).size());
-           //session.close();
-      }
+           //System.out.print();
+    	   //updateItemStock("123456789123", "40");
+    	   //session.close();
+     // }
 	
 	/***************************************Select Statements **********************/
     
@@ -315,7 +316,7 @@ public class ams {
           return item_list;
       }
       
-      public static List<PurchaseItem> selectPurchases(int receiptId) throws IOException, SQLException
+      public List<PurchaseItem> selectPurchases(int receiptId) throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -334,7 +335,7 @@ public class ams {
           return purchase_list;
       }
       
-      public static List<ReturnItem> selectReturnItems(int retid) throws IOException, SQLException
+      public List<ReturnItem> selectReturnItems(int retid) throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -353,7 +354,7 @@ public class ams {
           return return_list;
       }
       
-      public static int selectLatestPurchaseReceiptId() throws IOException, SQLException
+      public int selectLatestPurchaseReceiptId() throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -372,7 +373,7 @@ public class ams {
           return receiptid;
       }
       
-      public static int selectLatestReturnRetId() throws IOException, SQLException
+      public int selectLatestReturnRetId() throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -391,7 +392,7 @@ public class ams {
           return retid;
       }
       
-      public static int selectLatestReturnReceiptId() throws IOException, SQLException
+      public int selectLatestReturnReceiptId() throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -582,9 +583,9 @@ public class ams {
         
         //QUERY TO EXECUTE
         //Item item = session.select
-        Map<String, String> map = new HashMap<String, String>();
-  	  	map.put("cid", upc);
-  	  	map.put("password", qtyToAdd);
+        Map<String, Object> map = new HashMap<String, Object>();
+  	  	map.put("upc", upc);
+  	  	map.put("stock", qtyToAdd);
         session.update("ams.updateItemStock", map);
         //FOOTER
         session.commit();
@@ -609,6 +610,30 @@ public class ams {
   	  	map.put("date", userDate);
   	  	map.put("receiptId", receiptId);
         session.update("ams.updateOrderDate", map);
+        //FOOTER
+        session.commit();
+        session.close();
+        //END FOOTER
+    }
+    
+    /**
+     * @author Narbeh
+     */
+    public void updateItemStockAndPrice(String upc, int qtyToAdd, double price) throws IOException, SQLException
+    {
+        //HEADER
+        Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+        SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+        SqlSession session = smc.openSession();
+        //END HEADER
+        
+        //QUERY TO EXECUTE
+        //Item item = session.select
+        Map<String, Object> map = new HashMap<String, Object>();
+  	  	map.put("upc", upc);
+  	  	map.put("price", price);
+  	  	map.put("stock", qtyToAdd);
+        session.update("ams.updateItemStockAndPrice", map);
         //FOOTER
         session.commit();
         session.close();
