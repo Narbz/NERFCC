@@ -3,7 +3,7 @@
  * @author Narbeh Shahnazarian
  * @version 0.0
  */
-import java.util.Date;
+import java.sql.Date;
 public class Return extends Record {
 	private int retid, receiptId;
 	private Date date;
