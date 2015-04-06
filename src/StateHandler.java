@@ -1,6 +1,8 @@
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.Calendar;
+import java.sql.Date;
 import java.util.Scanner;
 /**
  * The StateHandler class is used to handle all methods that occur in a given state.
@@ -16,7 +18,7 @@ public class StateHandler
     private ErrorChecker ec;
     private ams database;
     
-    //User entity persistent through al lstates
+    //User entity persistent through all states
     private Customer cust;
     
     //hardcoded manager and clerk accounts
@@ -197,8 +199,10 @@ public class StateHandler
         printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
         String rid = getInput();
         int canReturn = -1;
+        int receiptId = Integer.parseInt(rid);
         try{
             canReturn = database.selectReceiptToVerifyDate(rid);
+        	orderItems = (ArrayList<PurchaseItem>) database.selectPurchases(receiptId);
         }catch(Exception e){
             printToScreen(e.getMessage());
         }
@@ -238,12 +242,17 @@ public class StateHandler
                 }
                 PurchaseItem toReturn = null;
                 while(toReturn == null){
-                    toReturn = searchUPC(orderItems, in);
+                    /*toReturn = searchUPC(orderItems, in);*/
+                	for(int i = 0; i < orderItems.size(); i++){
+                		if(in.equals(orderItems.get(i).getUPC())){
+                			toReturn = orderItems.get(i);
+                		}
+                	}
                 }
             
             
                 printToScreen("  Please enter the quantity of items that you wish ");
-                printToScreen("  to return, or ‘a’ for the entire quantity");
+                printToScreen("  to return, or 'a' for the entire quantity");
                 
                 int qty = -1;
                 while(qty == -1){ //invalid quantity
@@ -263,23 +272,50 @@ public class StateHandler
                     }
                 }
                 
-                ReturnItem i = new ReturnItem(1, qty, toReturn.getUPC());
-                retItems.add(i);
+                int reid;
+                try {
+					reid = database.selectLatestReturnRetId();
+					ReturnItem i = new ReturnItem(reid+1, qty, toReturn.getUPC());
+					retItems.add(i);
+					orderItems.remove(toReturn);
+	                toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
+	                if(toReturn.getQuantity() > 0){//Add it back as there are still more 
+	                    orderItems.add(toReturn);
+	                }
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 
-                orderItems.remove(toReturn);
-                toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
-                if(toReturn.getQuantity() > 0){//Add it back as tehre are still more 
-                    orderItems.add(toReturn);
-                }
                 
                 printToScreen("  Do you wish to include more items in this return? Y/N");
                 boolean moreItems = yesno(getInput(1));
                 if(!moreItems){
                     allItems = true;
                 }else{ //continue
-                }
+            }
             
+            int receiptId = toReturn.getReceiptID();
             
+            java.util.Date currentday = new java.util.Date();
+            Date date = new Date(currentday.getTime());
+			try {
+				Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
+				database.insertReturn(ret);
+            	for(int j = 0; j < retItems.size(); j++){
+            		database.insertReturnItem(retItems.get(j));
+            	}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+                
                 
             }
             if(orderItems.isEmpty()){
@@ -295,7 +331,7 @@ public class StateHandler
      */
     public State RETURNCONFIRM()
     {
-        printToScreen("  Attempting to process the return for the given items…");
+        printToScreen("  Attempting to process the return for the given items!");
         //<add items to return, returnItem table, increase quantity>
         boolean success = true;//above
         if(success){
@@ -406,7 +442,7 @@ public class StateHandler
             printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
             printToScreen("  Would you like to add it to the inventory? Y/N");
             boolean addToInv = yesno(getInput(1));
-            if(addToInv){//Adding a ne witem to the inventory
+            if(addToInv){//Adding a new item to the inventory
                 printToScreen("  Please enter the TITLE of the item: ");
                 String itemTitle = getInput(40);
                 printToScreen("  Please enter the TYPE of the item: CD/DVD");
@@ -923,7 +959,7 @@ public class StateHandler
         while(!validCard){
             printToScreen("  Please enter your credit card number.");
             cardnum = getInput(16);
-            //validate credit card is the right length, authenticatio
+            //validate credit card is the right length, authentication
             validCard = true;
             if(!validCard){
                 printToScreen("  This is not a valid credit card number.");

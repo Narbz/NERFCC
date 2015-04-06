@@ -140,13 +140,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </insert>
 
 <insert id="insertReturn">
-	insert into Return
+	insert into Returns
 		values (#{retid}, #{date}, #{receiptId})
 </insert>
 
 <insert id="insertReturnItem">
 	insert into ReturnItem
-		values (#{retid} #{upc}, #{quantity})
+		values (#{retid}, #{upc}, #{quantity})
 </insert>
 
 <!-- Select Statements. -->
