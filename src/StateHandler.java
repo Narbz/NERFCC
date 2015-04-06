@@ -369,9 +369,23 @@ public class StateHandler
                 }
             }
             itemToAdd.setStock(itemToAdd.getStock() + qty);
+            
+            //Update the rpice
+            printToScreen("  Would you like to update teh rpice as well? Y/N");
+            boolean updatePrice = yesno(getInput(1));
+            float price = 0;
+            if(updatePrice){
+                boolean validPrice = false;
+                while(!validPrice){
+                    price = ec.getPrice(getInput(12));
+                }
+            }
             boolean successful = false;
             try{
                 database.updateItemStock(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()));
+                if(updatePrice){
+                    //
+                }
                 successful = true;
             }catch(Exception e){
                 printToScreen(e.getMessage());
@@ -713,15 +727,17 @@ public class StateHandler
                 }
             }
         }
+        
+        //Search item by title
         printToScreen("Would you like to search by item title? Y/N");
-        boolean validCategory = false;
-       
-        printToScreen("  What is the title of the item you're searching for?");
-        String title = getInput(20);
-        if(category.toLowerCase().equals("cd")){
-            printToScreen("  Who is the lead singer of the item you're search for?");
-            String leadsinger = getInput(20);
+        boolean sbt = yesno(getInput(1));
+        String title = "";
+        if(sbt){
+            printToScreen("  Please enter the title of the item that you would like to search for.");
+            title = getInput(50);
         }
+
+        
         if(category.equals("") && title.equals("")){
             return st.SEARCHFAILED;
         }
@@ -784,6 +800,7 @@ public class StateHandler
                 printToScreen(toSelect.getItemTitle() + "to the basket? Y/N");
                 boolean addToBasket = yesno(getInput(1));
                 if(addToBasket){
+                    toSelect.setStock(qty);
                     VSB.add(toSelect);
                     printToScreen("  The item was added to your basket successfully");
                 }else{
@@ -853,16 +870,46 @@ public class StateHandler
      */
     public State PLACEHOLDER()
     {
-        return null;
-        
+        if(VSB.isEmpty()){
+            ORDERFAIL(0);
+        }
+        float total = 0;
+        for(Item i : VSB){
+            total += i.getStock() * i.getPrice();
+        }
+        printToScreen("  The total price fo ryour order is: " + total);
+        printToScreen("  Would you like to place this order? Y/N");
+        boolean place = yesno(getInput(1));
+        if(place){
+            return st.CHECKQTYFINAL;
+        }else{
+            return st.CUSTSTART;
+        }
+    
     }
     
     /**
-     * @author Curtis REVISIONS
+     * @author Curtis REVISIONS //INCOMPLETE!!!
      */
     public State CHECKQTYFINAL()
     {
-        //done later
+        for(Item i : VSB){
+            Item compare = null;
+            try{
+                compare = database.selectItemByUpc(i.getUpc());
+                
+            }catch(Exception e){
+                
+            }
+            
+            if(compare != null){
+                if(i.getStock() > compare.getStock()){
+                    printToScreen("  There is no longer enough stock to complete your order for this item.");
+                    printToScreen("  Please enter 'y' if you will accept " + compare.getStock() + " of the item");
+                }
+                
+            }
+        }
         return null;
     }
     
@@ -942,7 +989,13 @@ public class StateHandler
      */
     public State ORDERFAIL(int failtype)
     {
-        //doing later
+        if(failtype == 0){
+            printToScreen("  There are no items in your basket. You must have at least 1");
+            printToScreen("  item in you basket to place an order");
+            return st.CUSTSTART;
+        }else if(failtype == 1){
+            
+        }
         return null;
     }
     
