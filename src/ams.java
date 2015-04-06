@@ -10,8 +10,8 @@ import org.apache.ibatis.io.Resources;
 public class ams {
 
 	
-      // public static void main(String[] args)
-       //        throws IOException,SQLException{
+       //public static void main(String[] args)
+        //       throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
            //Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
            //SqlSessionFactory smc =  new SqlSessionFactoryBuilder().build(rd);
@@ -45,9 +45,9 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           //System.out.print(selectItemByTitle("%ero%").size());
+           //System.out.print(selectPurchases(1).get(1));
            //session.close();
-     // }
+      //}
 	
 	/***************************************Select Statements **********************/
     
@@ -313,6 +313,82 @@ public class ams {
           //add to the end of the list
           item_list.add(s);
           return item_list;
+      }
+      
+      public static List<String> selectPurchases(int receiptId) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  List<String> upc_list;
+    	  
+    	  upc_list =  session.selectList("ams.selectPurchases", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return upc_list;
+      }
+      
+      public static int selectLatestPurchaseReceiptId() throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int receiptid = 0;
+    	  
+    	  receiptid =  session.selectOne("ams.selectLatestPurchaseReceiptId", null);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return receiptid;
+      }
+      
+      public static int selectLatestReturnRetId() throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int retid = 0;
+    	  
+    	  retid =  session.selectOne("ams.selectLatestReturnRetId", null);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return retid;
+      }
+      
+      public static int selectLatestReturnReceiptId() throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int receiptId = 0;
+    	  
+    	  receiptId =  session.selectOne("ams.selectLatestReturnReceiptId", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return receiptId;
       }
       
     //************************INSERT STATEMENTS*******************************

@@ -231,6 +231,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	where receiptId = #{receiptId}
 </select>
 
+<select id="selectPurchases" resultType="String">
+	SELECT upc
+	FROM PurchaseItem
+	WHERE receiptId = #{receiptId}
+</select>
+
+<select id="selectLatestPurchaseReceiptId" resultType="int">
+	SELECT max(receiptId)
+	FROM PurchaseItem
+</select>
+
+<select id="selectLatestReturnRetId" resultType="int">
+	SELECT max(retid)
+	FROM Returns
+</select>
+
+<select id="selectLatestReturnReceiptId" resultType="int">
+	SELECT max(receiptId)
+	FROM Returns
+</select>
+
+
 <!--Update Statements-->
 <update id="updateItemStock">
 	UPDATE Item
