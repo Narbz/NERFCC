@@ -10,17 +10,16 @@ public class ErrorChecker
      */
     public static boolean checkPhoneNum(String s)
     {
-        try { 
-            Long.parseLong(s); 
-        } catch(NumberFormatException e) { 
-            return false; 
-        } catch(NullPointerException e) {
-            return false;
-        }
-        // only got here if we didn't return false
-        //Added length check as well
         if(s.length() != 10){
             return false;
+        }
+        String[] snums = s.split("");
+        for(String a : snums){
+            try{
+                Integer.parseInt(a);
+            }catch(NumberFormatException e){
+                return false;
+            }
         }
         return true;
     }
