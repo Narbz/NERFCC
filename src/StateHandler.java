@@ -22,8 +22,8 @@ public class StateHandler
     private Customer cust;
     
     //hardcoded manager and clerk accounts
-    private final Customer clerk1 = new Customer("Clerk1", "clrk", "1234", null, null);
-    private final Customer mgr1 = new Customer("Manager1", "mgr1", "1337", null, null);
+    private final Customer clerk1 = new Customer("Clerk", "Clerk Alice", "123", "1233 ams Street", "6036036030");
+    private final Customer mgr1 = new Customer("Manager", "Manager Bob", "password", "1233 ams Street", "6046046040");
     
     //Lists for item management
     private ArrayList<Item> VSB, searchedItems;
