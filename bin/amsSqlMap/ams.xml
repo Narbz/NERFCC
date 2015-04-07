@@ -258,6 +258,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	FROM Returns
 </select>
 
+<select id="selectOrderExists" resultType="int">
+	SELECT count(*)
+	FROM Orders
+	WHERE receiptId = #{receiptId}
+</select>
+
+<select id="selectOrder" resultMap="order">
+	SELECT *
+	FROM Orders
+	WHERE receiptId = #{receiptId}
+</select>
 
 <!--Update Statements-->
 <update id="updateItemStock">

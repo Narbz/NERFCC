@@ -414,6 +414,44 @@ public class ams {
           return receiptId;
       }
       
+      public int selectOrderExists(int receiptId) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int exists = 0;
+    	  
+    	  exists =  session.selectOne("ams.selectOrderExists", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return exists;
+      }
+      
+      public Order selectOrder(int receiptId) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  Order o;
+    	  
+    	  o =  session.selectOne("ams.selectOrder", receiptId);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return o;
+      }
+      
     //************************INSERT STATEMENTS*******************************
     /**
     * 
@@ -577,7 +615,7 @@ public class ams {
     /**
      * @author Narbeh
      */
-    public void updateItemStock(String upc, String qtyToAdd) throws IOException, SQLException
+    public int updateItemStock(String upc, String qtyToAdd) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -590,17 +628,19 @@ public class ams {
         Map<String, Object> map = new HashMap<String, Object>();
   	  	map.put("upc", upc);
   	  	map.put("stock", qtyToAdd);
-        session.update("ams.updateItemStock", map);
+        int success = session.update("ams.updateItemStock", map);
         //FOOTER
         session.commit();
         session.close();
         //END FOOTER
+        
+        return success;
     }
     
     /**
      * @author Curtis 
      */
-    public void updateOrderDate(String userDate, String receiptId) throws IOException, SQLException
+    public int updateOrderDate(String userDate, String receiptId) throws IOException, SQLException
     {
   	  //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -613,17 +653,19 @@ public class ams {
         Map<String, String> map = new HashMap<String, String>();
   	  	map.put("date", userDate);
   	  	map.put("receiptId", receiptId);
-        session.update("ams.updateOrderDate", map);
+        int success = session.update("ams.updateOrderDate", map);
         //FOOTER
         session.commit();
         session.close();
         //END FOOTER
+        
+        return success;
     }
     
     /**
      * @author Narbeh
      */
-    public void updateItemStockAndPrice(String upc, int qtyToAdd, double price) throws IOException, SQLException
+    public int updateItemStockAndPrice(String upc, String qtyToAdd, double price) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -637,11 +679,12 @@ public class ams {
   	  	map.put("upc", upc);
   	  	map.put("price", price);
   	  	map.put("stock", qtyToAdd);
-        session.update("ams.updateItemStockAndPrice", map);
+        int success = session.update("ams.updateItemStockAndPrice", map);
         //FOOTER
         session.commit();
         session.close();
         //END FOOTER
+        return success;
     }
     
     

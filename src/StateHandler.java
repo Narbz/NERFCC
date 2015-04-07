@@ -435,27 +435,36 @@ public class StateHandler
             itemToAdd.setStock(itemToAdd.getStock() + qty);
             
             //Update the rpice
-            printToScreen("  Would you like to update teh rpice as well? Y/N");
+            printToScreen("  Would you like to update the price as well? Y/N");
             String in = getInput(1);
             headerAct = headerActions(in);
             if(headerAct != null) {
             	return headerAct;
             }
+            
             boolean updatePrice = yesno(in);
-            float price = 0;
+            String price = "";
             if(updatePrice){
-                boolean validPrice = false;
+            	printToScreen("  Please enter the new price: ");
+            	price = getInput(12);//ec.getPrice(getInput(12));
+                boolean validPrice = Pattern.matches("[0-9]+[.][0-9]{2}", price);
                 while(!validPrice){
-                    price = ec.getPrice(getInput(12));
+                	printToScreen("  The price ou entered is invaild. Please enter a new price in form x.xx");
+                    price = getInput(12);//ec.getPrice(getInput(12));
+                    validPrice = Pattern.matches("[0-9]+[.][0-9]{2}", price);
                 }
             }
             boolean successful = false;
             try{
-                database.updateItemStock(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()));
+            	int isSuccessful = 0;
                 if(updatePrice){
-                    //
+                	isSuccessful = database.updateItemStockAndPrice(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()), Double.parseDouble(price));                
+                	}
+                else
+                {
+                	isSuccessful = database.updateItemStock(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()));
                 }
-                successful = true;
+                successful = (isSuccessful > 0) ? true:false;
             }catch(Exception e){
                 printToScreen(e.getMessage());
             }
@@ -471,6 +480,10 @@ public class StateHandler
                 boolean moreItems = yesno(getInput(1));
                 if(!moreItems){
                     return st.MGRSTART;
+                }
+                if(moreItems)
+                {
+                	return st.ADDITEMS;
                 }
             }else{
                 printToScreen("  The database failed to update correctly");
@@ -499,6 +512,7 @@ public class StateHandler
                 String type = "";
                 while(!validType){
                     type = getInput(3);
+                    //validType = type.equalsIgnoreCase("CD")||type.equalsIgnoreCase("DVD");//Pattern.matches("CD", type);
                     headerAct = headerActions(type);
                     if(headerAct != null) {
                     	return headerAct;
@@ -616,7 +630,7 @@ public class StateHandler
                     }
                 }
                 
-                printToScreen("  Now attemting to add the new item into the database.");
+                printToScreen("  Now attempting to add the new item into the database.");
                 //String upc, String itemTitle, String type, String category,
                 //String company, int year, float price, int stock
                 Item newItem = new Item(upc, itemTitle, type, category, company, year, price, qty);
@@ -640,7 +654,7 @@ public class StateHandler
                 }
                 
                 if(success){
-                    printToScreen("  The item has been successfully aded to the database!");
+                    printToScreen("  The item has been successfully added to the database!");
                 }else{
                     printToScreen("  Error: the item was not added to the database");
                 }
@@ -664,8 +678,11 @@ public class StateHandler
     
     /**
      * @author Narbeh
+     * @throws SQLException 
+     * @throws IOException 
+     * @throws NumberFormatException 
      */
-    public State PROCDELIVERY()
+    public State PROCDELIVERY() throws NumberFormatException, IOException, SQLException
     {
         printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
         String receiptID = getInput();
@@ -674,15 +691,16 @@ public class StateHandler
         	return headerAct;
         }
         boolean isReceiptIDValid;
-        if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
-            isReceiptIDValid = false;
-        }else{
-            isReceiptIDValid = true;
-        }
+        //if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
+            isReceiptIDValid = (database.selectOrderExists(Integer.parseInt(receiptID)) > 0) ? true:false;
+        //}else{
+        //    isReceiptIDValid = true;
+        //}
         while(!isReceiptIDValid){
             printToScreen("  Invalid receiptId entered. ");
             printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
             receiptID = getInput();
+            isReceiptIDValid = (database.selectOrderExists(Integer.parseInt(receiptID)) > 0) ? true:false;
             headerAct = headerActions(receiptID);
             if(headerAct != null) {
             	return headerAct;
@@ -696,10 +714,13 @@ public class StateHandler
         }
         boolean wasUpdated = yesno(in);
         if(wasUpdated){
+        	String expectedPattern = "yyyy-MM-dd";
+            SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
             java.util.Date currentday = new java.util.Date();
-            Date date = new Date(currentday.getTime());
+            String date = formatter.format(currentday);
+           // Date date  = formatter.parse(currentday);//new Date(currentday.getTime());
             try{
-                database.updateOrderDate(date.toString(), receiptID);
+                database.updateOrderDate(date, receiptID);
             }catch(Exception e){
                 printToScreen(e.getMessage());
             }
