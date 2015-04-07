@@ -6,12 +6,12 @@
  */
 public class PurchaseItem extends Record
 {
-    private int receiptID, quantity;
+    private int receiptId, quantity;
     private String upc;
     
     public PurchaseItem(int rid, int qty, String upc)
     {
-        setReceiptID(rid);
+        setReceiptId(rid);
         setQuantity(qty);
         setUPC(upc);
     }
@@ -21,9 +21,9 @@ public class PurchaseItem extends Record
     	//Default Constructor
     }
     
-    public int getReceiptID()
+    public int getReceiptId()
     {
-        return receiptID;
+        return receiptId;
     }
     
     public int getQuantity()
@@ -36,9 +36,9 @@ public class PurchaseItem extends Record
         return upc;
     }
     
-    public void setReceiptID(int rid)
+    public void setReceiptId(int rid)
     {
-        receiptID = rid;
+        receiptId = rid;
     }
     
     public void setQuantity(int qty)

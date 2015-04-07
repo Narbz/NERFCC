@@ -321,7 +321,7 @@ public class StateHandler
                 }else{ //continue
                 }
             
-                int receiptId = toReturn.getReceiptID();
+                int receiptId = toReturn.getReceiptId();
                 
                 java.sql.Date currentday = (java.sql.Date) new Date();
                 //Date date = new Date(currentday.getTime());
@@ -939,7 +939,7 @@ public class StateHandler
         if(sbt){
             printToScreen("  Please enter the title of the item that you would like to search for.");
             title = getInput(50);
-            
+            title = '%'+title+'%';
             headerAct = headerActions(title);
             if(headerAct != null) {
             	return headerAct;
@@ -968,7 +968,8 @@ public class StateHandler
         }
         
         if(category == null && title == null && leadSinger == null){
-            return st.SEARCHFAILED;
+            printToScreen("  Could not complete search as no search critera given.  Returning to start page...");
+        	return st.CUSTSTART;//st.SEARCHFAILED;
         }
         
         try{
@@ -1047,7 +1048,7 @@ public class StateHandler
                 }
                 //If there is sufficient stock or the user accepts the available stock
                 printToScreen("  Would you like to add " + qty + " of the item with title: ");
-                printToScreen(toSelect.getItemTitle() + "to the basket? Y/N");
+                printToScreen(toSelect.getItemTitle() + " to the basket? Y/N");
                 boolean addToBasket = yesno(getInput(1));
                 if(addToBasket){
                     toSelect.setStock(qty);
@@ -1239,7 +1240,7 @@ public class StateHandler
         if(validated){
         	order = new Order();
         	order.setCid(cust.getCID());
-        	order.setExpriyDate(_cardDate);
+        	order.setExpiryDate(_cardDate);
         	order.setCardNum(Long.parseLong(cardnum));
             return st.ORDERFINAL;
         }else{
@@ -1282,20 +1283,22 @@ public class StateHandler
     	String datePattern = "yyyy-MM-dd";
     	SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
     	String orderDate = formatter.format(new Date());
-    	Date _orderDate = new SimpleDateFormat(datePattern).parse(orderDate);
+    	Date _orderDate = formatter.parse(orderDate);//new SimpleDateFormat(datePattern).parse(orderDate);
     	
     	//expectedDeliveryDate
     	Calendar cal = Calendar.getInstance();
     	//make delivery date 7 days from the current time
     	cal.add(Calendar.DATE, 7);
-    	String expectedDate = formatter.format(cal);
-    	Date _expectedDate = new SimpleDateFormat(datePattern).parse(expectedDate);
+    	String expectedDate = formatter.format(cal.getTime());
+    	Date _expectedDate = formatter.parse(expectedDate);//new SimpleDateFormat(datePattern).parse(expectedDate);
     	
     	order.setDate(_orderDate);
     	order.setExpectedDate(_expectedDate);
     	
+    	order.setDeliveredDate(_expectedDate);
+    	
     	int receiptId = database.selectLatestPurchaseReceiptId() + 1;
-    	order.setRecieptId(receiptId);
+    	order.setReceiptId(receiptId);
     	
     	//if insert is successful, didInsert should be 1, 0 otherwise
     	int didInsert = database.insertOrder(order);
@@ -1307,9 +1310,9 @@ public class StateHandler
         	PurchaseItem p = new PurchaseItem();
         	for(int i = 0; i < VSB.size(); i++)
         	{
-        		p.setReceiptID(receiptId);
+        		p.setReceiptId(receiptId);
         		p.setUPC(VSB.get(i).getUpc());
-        		p.setQuantity(VSB.get(i).getStock());//The VSB is of type item, should really be of type purchaseItem
+        		p.setQuantity(VSB.get(i).getStock());
         		database.insertPurchaseItem(p);
         	}
         	
@@ -1318,10 +1321,11 @@ public class StateHandler
             VSB.clear();
             orderItems.clear();
             searchedItems.clear();
+            return st.CUSTSTART;
         }else{
             return ORDERFAIL(2);
         }
-        return null; //dummy return, unreachable
+        //return null; //dummy return, unreachable
     }
     
     /**

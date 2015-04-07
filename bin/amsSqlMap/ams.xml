@@ -55,7 +55,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<result property="receiptId" column="receiptId"/>
 	<result property="date" column="date"/>
 	<result property="cid" column="cid"/>
-	<result property="card#" column="card#"/>
+	<result property="cardNum" column="cardNUm"/>
 	<result property="expiryDate" column="expiryDate"/>
 	<result property="expectedDate" column="expectedDate"/>
 	<result property="deliveredDate" column="deliveredDate"/>
@@ -75,7 +75,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </resultMap>
 
 <resultMap id="purchaseItem" type="PurchaseItem">
-	<result property="receiptID" column="receiptId"/>
+	<result property="receiptId" column="receiptId"/>
 	<result property="upc" column="upc"/>
     <result property="quantity" column="quantity"/>
 </resultMap>
@@ -115,8 +115,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 </insert>
 
 <insert id="insertOrder">
-	insert into Order
-		values (#{receiptId}, #{date}, #{cid}, #{card#}, #{expireDate}, #{expectedDate}, #{deliveredDate})
+	insert into Orders
+		values (#{receiptId}, #{date}, #{cid}, #{cardNum}, #{expiryDate}, #{expectedDate}, #{deliveredDate})
 </insert>
 
 <insert id="insertCustomer">
@@ -136,7 +136,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <insert id="insertPurchaseItem">
 	insert into PurchaseItem
-		values (#{recieptId}, #{upc}, #{quantity})
+		values (#{receiptId}, #{upc}, #{quantity})
 </insert>
 
 <insert id="insertReturn">
@@ -203,7 +203,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	SELECT I.upc, I.itemTitle, S.singerName, I.stock, I.price, I.type, I.category, I.company, I.year
 	FROM Item I INNER JOIN LeadSinger S
 	ON I.upc = S.upc
-	WHERE category = #{category} OR itemTitle = #{itemTitle} OR singerName = #{singerName}
+	WHERE category = #{category} OR itemTitle like #{itemTitle} OR singerName = #{singerName}
 </select>
 
 <select id="selectItem" resultMap="item">

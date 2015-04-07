@@ -2,23 +2,23 @@ import java.util.Date;
 
 
 public class Order extends Record {
-	private int recieptId;
+	private int receiptId;
 	private Date date;
 	private String cid;
 	private long cardNum; 
-	private Date expriyDate;
+	private Date expiryDate;
 	private Date expectedDate;
 	private Date deliveredDate;
 	
 	//Constructor - we will use this in the future to begin a insertion. i.e we first will create an Order object and use myBatis to insert this object
-	public Order(int recieptId, Date date, String cid, long cardNum, Date expriyDate,
+	public Order(int receiptId, Date date, String cid, long cardNum, Date expiryDate,
 			Date expectedDate, Date deliveredDate) {
 		super();
-		this.recieptId = recieptId;
+		this.receiptId = receiptId;
 		this.date = date;
 		this.cid = cid;
 		this.cardNum = cardNum;
-		this.expriyDate = expriyDate;
+		this.expiryDate = expiryDate;
 		this.expectedDate = expectedDate;
 		this.deliveredDate = deliveredDate;
 	}
@@ -29,11 +29,11 @@ public class Order extends Record {
 	}
 	
 	/**Standard setters and getters **/
-	public int getRecieptId() {
-		return recieptId;
+	public int getReceiptId() {
+		return receiptId;
 	}
-	public void setRecieptId(int recieptId) {
-		this.recieptId = recieptId;
+	public void setReceiptId(int receiptId) {
+		this.receiptId = receiptId;
 	}
 	public Date getDate() {
 		return date;
@@ -47,11 +47,11 @@ public class Order extends Record {
 	public void setCid(String cid) {
 		this.cid = cid;
 	}
-	public Date getExpriyDate() {
-		return expriyDate;
+	public Date getExpiryDate() {
+		return expiryDate;
 	}
-	public void setExpriyDate(Date expriyDate) {
-		this.expriyDate = expriyDate;
+	public void setExpiryDate(Date expiryDate) {
+		this.expiryDate = expiryDate;
 	}
 	public Date getExpectedDate() {
 		return expectedDate;
