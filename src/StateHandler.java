@@ -80,10 +80,10 @@ public class StateHandler
         String username = getInput(50);
         printToScreen("  Please enter your password.");
         String password = getInput(40);
-        if(username.equals(clerk1.getCID()) && password.equals(clerk1.getPassword())){
+        if(username.equalsIgnoreCase(clerk1.getCID()) && password.equals(clerk1.getPassword())){
             cust = clerk1;
             return st.CLERKSTART;
-        }else if(username.equals(mgr1.getCID()) && password.equals(mgr1.getPassword())){
+        }else if(username.equalsIgnoreCase(mgr1.getCID()) && password.equals(mgr1.getPassword())){
             cust = mgr1;
             return st.MGRSTART;
         }
@@ -199,10 +199,11 @@ public class StateHandler
         printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
         String rid = getInput();
         int canReturn = -1;
-        int receiptId = Integer.parseInt(rid);
+        
         try{
+            int receiptId = Integer.parseInt(rid);
             canReturn = database.selectReceiptToVerifyDate(rid);
-        	orderItems = (ArrayList<PurchaseItem>) database.selectPurchases(receiptId);
+            orderItems = (ArrayList<PurchaseItem>) database.selectPurchases(receiptId);
         }catch(Exception e){
             printToScreen(e.getMessage());
         }
@@ -210,7 +211,7 @@ public class StateHandler
         if(canReturn == 1){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            
+            printReturnItems(retItems);
             return st.RETURNITEMS;
         }else if(canReturn == 0){
             printToScreen("  The items in this receipt cannot be returned because");
@@ -243,11 +244,11 @@ public class StateHandler
                 PurchaseItem toReturn = null;
                 while(toReturn == null){
                     /*toReturn = searchUPC(orderItems, in);*/
-                	for(int i = 0; i < orderItems.size(); i++){
-                		if(in.equals(orderItems.get(i).getUPC())){
-                			toReturn = orderItems.get(i);
-                		}
-                	}
+                    for(int i = 0; i < orderItems.size(); i++){
+                        if(in.equals(orderItems.get(i).getUPC())){
+                            toReturn = orderItems.get(i);
+                        }
+                    }
                 }
             
             
@@ -274,21 +275,21 @@ public class StateHandler
                 
                 int reid;
                 try {
-					reid = database.selectLatestReturnRetId();
-					ReturnItem i = new ReturnItem(reid+1, qty, toReturn.getUPC());
-					retItems.add(i);
-					orderItems.remove(toReturn);
-	                toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
-	                if(toReturn.getQuantity() > 0){//Add it back as there are still more 
-	                    orderItems.add(toReturn);
-	                }
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                    reid = database.selectLatestReturnRetId();
+                    ReturnItem i = new ReturnItem(reid+1, qty, toReturn.getUPC());
+                    retItems.add(i);
+                    orderItems.remove(toReturn);
+                    toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
+                    if(toReturn.getQuantity() > 0){//Add it back as there are still more 
+                        orderItems.add(toReturn);
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 
                 
                 printToScreen("  Do you wish to include more items in this return? Y/N");
@@ -296,25 +297,25 @@ public class StateHandler
                 if(!moreItems){
                     allItems = true;
                 }else{ //continue
-            }
+                }
             
-            int receiptId = toReturn.getReceiptID();
+                int receiptId = toReturn.getReceiptID();
             
-            java.util.Date currentday = new java.util.Date();
-            Date date = new Date(currentday.getTime());
-			try {
-				Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
-				database.insertReturn(ret);
-            	for(int j = 0; j < retItems.size(); j++){
-            		database.insertReturnItem(retItems.get(j));
-            	}
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+                java.util.Date currentday = new java.util.Date();
+                Date date = new Date(currentday.getTime());
+                try {
+                    Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
+                    database.insertReturn(ret);
+                    for(int j = 0; j < retItems.size(); j++){
+                        database.insertReturnItem(retItems.get(j));
+                    }
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
                 
                 
             }
