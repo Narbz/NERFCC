@@ -125,13 +125,13 @@ public class StateHandler
         String address = getInput(40);
         printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
         String phonenum = getInput(10);
-        boolean validNum = ec.checkPhoneNum(phonenum);
+        boolean validNum = ec.checkNumLength(phonenum, 10);
         while(!validNum){
             printToScreen("  The phone number you enter is not a valid phone number.");  
             printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
             printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
             phonenum = getInput(10);
-            validNum = ec.checkPhoneNum(phonenum);
+            validNum = ec.checkNumLength(phonenum, 10);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         boolean validUser = false;
@@ -177,7 +177,7 @@ public class StateHandler
      */
     public State CLERKSTART()
     {
-         printToScreen("  If you wish to process a return, please enter 'r'");
+        printToScreen("  If you wish to process a return, please enter 'r'");
         printToScreen("  If you wish to log out, please enter 'q'");
         String choice = getInput(1);
         if(choice.equalsIgnoreCase("r")){
@@ -191,7 +191,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Chazz, Curtis
      */
     public State PROCESSRETURN()
     {
@@ -224,7 +224,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Chazz, Curtis
      */
     public State RETURNITEMS()
     {
@@ -328,7 +328,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Curtis, Chazz
      */
     public State RETURNCONFIRM()
     {
@@ -602,7 +602,13 @@ public class StateHandler
         printToScreen("  Has this order been shipped? Y/N");
         boolean wasUpdated = yesno(getInput(1));
         if(wasUpdated){
-            //<execute updateOrderDate>
+            java.util.Date currentday = new java.util.Date();
+            Date date = new Date(currentday.getTime());
+            try{
+                database.updateOrderDate(date.toString(), receiptID);
+            }catch(Exception e){
+                printToScreen(e.getMessage());
+            }
         }else{
             printToScreen("  Order not updated");   
         }
@@ -745,7 +751,7 @@ public class StateHandler
     }
     
     /**
-     * @author Curtis
+     * @author Curtis INCOMPLETE
      */
     public State SEARCHSTATE()
     {
@@ -848,6 +854,7 @@ public class StateHandler
             }
             printToScreen("  Would you like to search for more items? Y/N");
             boolean moreItems  = yesno(getInput(1));
+            searchedItems.clear();
             if(!moreItems){
                 return st.CUSTSTART;
             }
@@ -930,6 +937,8 @@ public class StateHandler
      */
     public State CHECKQTYFINAL()
     {
+        ArrayList<Item> toRemove = new ArrayList<Item>(); 
+        //This is to prevent a concurrent modificatio nexception
         for(Item i : VSB){
             Item compare = null;
             try{
@@ -943,8 +952,22 @@ public class StateHandler
                 if(i.getStock() > compare.getStock()){
                     printToScreen("  There is no longer enough stock to complete your order for this item.");
                     printToScreen("  Please enter 'y' if you will accept " + compare.getStock() + " of the item");
+                    printToScreen("  Please enter 'n' if you would like to remove the item from the order.");
+                    boolean choice = yesno(getInput(1));
+                    if(choice){
+                        i.setStock(compare.getStock());
+                    }else{
+                        toRemove.add(i);
+                    }
                 }
                 
+            }
+        }
+        
+        //Remove the bad items from the order
+        if(!toRemove.isEmpty()){
+            for(Item i : toRemove){
+                VSB.remove(i);
             }
         }
         return null;
@@ -960,8 +983,7 @@ public class StateHandler
         while(!validCard){
             printToScreen("  Please enter your credit card number.");
             cardnum = getInput(16);
-            //validate credit card is the right length, authentication
-            validCard = true;
+            validCard = ec.checkNumLength(cardnum, 16); //THIS IS A HACK!!!
             if(!validCard){
                 printToScreen("  This is not a valid credit card number.");
             }
@@ -999,7 +1021,7 @@ public class StateHandler
         if(fconfirm){
             return st.RECEIPT;
         }else{
-            return st.ORDERFAIL;
+            return ORDERFAIL(1);
         }
     }
     
@@ -1008,15 +1030,18 @@ public class StateHandler
      */
     public State RECEIPT()
     {
-        //Generate the order for placement ionto the DB
+        //Generate order receipt number
         //Generate receiptID and expected date
         //Attempt to add to the database, set boolean successful
         boolean successful = true;
         if(successful){
             printToScreen("  Thank you for your order! Your order number is: " /*+ <receiptID>*/);
             printToScreen("  Your order will arrive in approximately " + /*<shipTime + */ " days");
+            VSB.clear();
+            orderItems.clear();
+            searchedItems.clear();
         }else{
-            return st.ORDERFAIL;
+            return ORDERFAIL(2);
         }
         return null; //dummy return, unreachable
     }
@@ -1031,7 +1056,9 @@ public class StateHandler
             printToScreen("  item in you basket to place an order");
             return st.CUSTSTART;
         }else if(failtype == 1){
-            
+            printToScreen("  The order has been cancelled successfully!");
+        }else if(failtype == 2){
+            printToScreen("  The database failed to receive your order.");
         }
         return null;
     }
