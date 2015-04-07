@@ -180,9 +180,9 @@ public class StateHandler
          printToScreen("  If you wish to process a return, please enter 'r'");
         printToScreen("  If you wish to log out, please enter 'q'");
         String choice = getInput(1);
-        if(choice.toLowerCase().equals("r")){
+        if(choice.equalsIgnoreCase("r")){
             return st.PROCESSRETURN;  
-        }else if(choice.toLowerCase().equals("q")){
+        }else if(choice.equalsIgnoreCase("q")){
             return st.INITIAL;
         }else{//do nothing
             printToScreen("  This is not a valid operation.");
@@ -233,7 +233,7 @@ public class StateHandler
             printToScreen("  Please select the upc of the item that you"); 
             printToScreen("  wish to return, or 'd' if you are finished");
             String in = getInput(12); //instead of UPC
-            if(in.toLowerCase().equals("d")){
+            if(in.equalsIgnoreCase("d")){
                 allItems = true;
             }else{
                 while(ec.getUPC(in) == null){
@@ -257,7 +257,7 @@ public class StateHandler
                 int qty = -1;
                 while(qty == -1){ //invalid quantity
                     in = getInput(12);
-                    if(in.toLowerCase().equals("a")){
+                    if(in.equalsIgnoreCase("a")){
                         qty = toReturn.getQuantity();
                     }else{
                         qty = ec.getNum(in);
@@ -359,17 +359,17 @@ public class StateHandler
         printToScreen("  To log out, please enter 'q'");
         printToScreen("  To exit the program, please enter 'x'");
         String choice = getInput(1);
-        if(choice.toLowerCase().equals("a")){
+        if(choice.equalsIgnoreCase("a")){
             return st.ADDITEMS;
-        }else if(choice.toLowerCase().equals("p")){
+        }else if(choice.equalsIgnoreCase("p")){
             return st.PROCDELIVERY;
-        }else if(choice.toLowerCase().equals("d")){
+        }else if(choice.equalsIgnoreCase("d")){
             return st.DSRINIT;
-        }else if(choice.toLowerCase().equals("n")){
+        }else if(choice.equalsIgnoreCase("n")){
             return st.NTSRINIT;
-        }else if(choice.toLowerCase().equals("q")){
+        }else if(choice.equalsIgnoreCase("q")){
             return st.INITIAL;
-        }else if(choice.toLowerCase().equals("x")){
+        }else if(choice.equalsIgnoreCase("x")){
             return st.EXIT;
         } else{//Do nothing
             printToScreen("  This is not a valid option. Please try again.");   
@@ -730,13 +730,13 @@ public class StateHandler
         String in = getInput(1);
         //HEADER TRANSITIONS
 
-        if(in.toLowerCase().equals("s")){
+        if(in.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
-        }else if(in.toLowerCase().equals("v")){
+        }else if(in.equalsIgnoreCase("v")){
             return st.VIEWVSB;
-        }else if(in.toLowerCase().equals("q")){
+        }else if(in.equalsIgnoreCase("q")){
             return st.INITIAL;
-        }else if(in.toLowerCase().equals("x")){
+        }else if(in.equalsIgnoreCase("x")){
             return st.EXIT;
         }else{//Do nothing
             return st.CUSTSTART;
@@ -804,7 +804,7 @@ public class StateHandler
     {
         printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
-        if(upc.toLowerCase().equals("s")){
+        if(upc.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
         }else{
             Item toSelect = searchByUPC(searchedItems, upc);
@@ -869,11 +869,11 @@ public class StateHandler
             printToScreen("  If you would like to place an order for these items, please enter 'o'");
             printToScreen("  If you would like to continue searching for items, please enter 's'.");
             String choice = getInput(1);
-            if(choice.toLowerCase().equals("c")){
+            if(choice.equalsIgnoreCase("c")){
                 return st.CLEARVSB;
-            }else if(choice.toLowerCase().equals("o")){
+            }else if(choice.equalsIgnoreCase("o")){
                 return st.PLACEORDER;
-            }else if(choice.toLowerCase().equals("s")){
+            }else if(choice.equalsIgnoreCase("s")){
                 return st.SEARCHSTATE;
             }else{
                 printToScreen("  This is not a valid coice.");
