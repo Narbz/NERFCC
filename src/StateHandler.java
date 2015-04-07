@@ -31,7 +31,7 @@ public class StateHandler
     private final Customer mgr1 = new Customer("Manager", "Manager Bob", "password", "1233 ams Street", "6046046040");
     
     //Lists for item management
-    private ArrayList<Item> VSB, searchedItems;
+    private ArrayList<SearchItem> VSB, searchedItems;
     private ArrayList<PurchaseItem> orderItems, INSFStock;
     private ArrayList<ReturnItem> retItems;
     
@@ -49,8 +49,8 @@ public class StateHandler
         cust = null;
         database = new ams();
         
-        searchedItems = new ArrayList<Item>();
-        VSB = new ArrayList<Item>();
+        searchedItems = new ArrayList<SearchItem>();
+        VSB = new ArrayList<SearchItem>();
         orderItems = new ArrayList<PurchaseItem>();INSFStock = new ArrayList<PurchaseItem>(); 
         retItems = new ArrayList<ReturnItem>();
         order = null;
@@ -123,7 +123,7 @@ public class StateHandler
      */
     public State REGISTER()
     {
-        printToScreen("  You’re only a few steps away from creating your AMS account!");  
+        printToScreen("  You're only a few steps away from creating your AMS account!");  
         printToScreen("  Firstly, please enter your first and last name:");
         String name = getInput(40);
         printToScreen("  Please enter your address: ");
@@ -182,9 +182,15 @@ public class StateHandler
      */
     public State CLERKSTART()
     {
+    	printHeader();
         printToScreen("  If you wish to process a return, please enter 'r'");
-        printToScreen("  If you wish to log out, please enter 'q'");
         String choice = getInput(1);
+        
+        State headerAct = headerActions(choice);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
         if(choice.equalsIgnoreCase("r")){
             return st.PROCESSRETURN;  
         }else if(choice.equalsIgnoreCase("q")){
@@ -203,6 +209,10 @@ public class StateHandler
         printToScreen("  You have chosen to process a return.");
         printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
         String rid = getInput();
+        State headerAct = headerActions(rid);
+        if(headerAct != null) {
+        	return headerAct;
+        }
         int canReturn = -1;
         
         try{
@@ -239,6 +249,10 @@ public class StateHandler
             printToScreen("  Please select the upc of the item that you"); 
             printToScreen("  wish to return, or 'd' if you are finished");
             String in = getInput(12); //instead of UPC
+            State headerAct = headerActions(in);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             if(in.equalsIgnoreCase("d")){
                 allItems = true;
             }else{
@@ -289,16 +303,19 @@ public class StateHandler
                         orderItems.add(toReturn);
                     }
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (SQLException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 
                 
                 printToScreen("  Do you wish to include more items in this return? Y/N");
-                boolean moreItems = yesno(getInput(1));
+                in = getInput(1);
+                headerAct = headerActions(in);
+                if(headerAct != null) {
+                	return headerAct;
+                }
+                boolean moreItems = yesno(in);
                 if(!moreItems){
                     allItems = true;
                 }else{ //continue
@@ -316,10 +333,8 @@ public class StateHandler
                         database.insertReturnItem(retItems.get(j));
                     }
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
                 
@@ -357,15 +372,21 @@ public class StateHandler
      */
     public State MGRSTART()
     {
+    	printHeader();
+    	
         printToScreen("  Please select one of the following options:");
         printToScreen("  To increase the quantity of an existing item or to add "); 
         printToScreen("  a new item to the database, please enter 'a'.");
         printToScreen("  To process the delivery of an item, please enter 'p'.");
         printToScreen("  To generate a sales report for a given date, please enter 'd'.");
         printToScreen("  To generate a sales report for the top selling items, please enter 'n'.");
-        printToScreen("  To log out, please enter 'q'");
-        printToScreen("  To exit the program, please enter 'x'");
         String choice = getInput(1);
+        
+        State headerAct = headerActions(choice);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
         if(choice.equalsIgnoreCase("a")){
             return st.ADDITEMS;
         }else if(choice.equalsIgnoreCase("p")){
@@ -374,10 +395,6 @@ public class StateHandler
             return st.DSRINIT;
         }else if(choice.equalsIgnoreCase("n")){
             return st.NTSRINIT;
-        }else if(choice.equalsIgnoreCase("q")){
-            return st.INITIAL;
-        }else if(choice.equalsIgnoreCase("x")){
-            return st.EXIT;
         } else{//Do nothing
             printToScreen("  This is not a valid option. Please try again.");   
             return st.MGRSTART;
@@ -391,6 +408,10 @@ public class StateHandler
     {
         printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
         String upc = getInput(12);
+        State headerAct = headerActions(upc);
+        if(headerAct != null) {
+        	return headerAct;
+        }
         itemToAdd = null;
         try{
             itemToAdd = database.selectItemByUpc(upc);
@@ -415,7 +436,12 @@ public class StateHandler
             
             //Update the rpice
             printToScreen("  Would you like to update teh rpice as well? Y/N");
-            boolean updatePrice = yesno(getInput(1));
+            String in = getInput(1);
+            headerAct = headerActions(in);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+            boolean updatePrice = yesno(in);
             float price = 0;
             if(updatePrice){
                 boolean validPrice = false;
@@ -437,6 +463,11 @@ public class StateHandler
             if(successful){
                 printToScreen("  The database was successfully updated!");
                 printToScreen("  Would you like to add more items? Y/N");
+                in = getInput(1);
+                headerAct = headerActions(in);
+                if(headerAct != null) {
+                	return headerAct;
+                }
                 boolean moreItems = yesno(getInput(1));
                 if(!moreItems){
                     return st.MGRSTART;
@@ -448,10 +479,19 @@ public class StateHandler
         }else{//this means the item is a new one
             printToScreen("  Could not update.  This is a new item not currently in the inventory."); 
             printToScreen("  Would you like to add it to the inventory? Y/N");
-            boolean addToInv = yesno(getInput(1));
+            String in = getInput(1);
+            headerAct = headerActions(in);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+            boolean addToInv = yesno(in);
             if(addToInv){//Adding a new item to the inventory
                 printToScreen("  Please enter the TITLE of the item: ");
                 String itemTitle = getInput(40);
+                headerAct = headerActions(itemTitle);
+                if(headerAct != null) {
+                	return headerAct;
+                }
                 printToScreen("  Please enter the TYPE of the item: CD/DVD");
                 
                 //Valid type
@@ -459,6 +499,10 @@ public class StateHandler
                 String type = "";
                 while(!validType){
                     type = getInput(3);
+                    headerAct = headerActions(type);
+                    if(headerAct != null) {
+                    	return headerAct;
+                    }
                     validType = ec.isCDDVD(type);
                     if(!validType){
                         printToScreen("  The is not a valid type. Please enter 'CD' or 'DVD'");
@@ -471,6 +515,10 @@ public class StateHandler
                 boolean validCategory = false;
                 while(!validCategory){
                     category = getInput(20);
+                    headerAct = headerActions(category);
+                    if(headerAct != null) {
+                    	return headerAct;
+                    }
                     validCategory = ec.isValidCategory(category);
                     if(!validCategory){
                         printToScreen("  This is not a valid category. Please enter 'rock', 'pop',");
@@ -480,6 +528,10 @@ public class StateHandler
 
                 printToScreen("  Please enter the COMPANY the item came from:  ");
                 String company = getInput(20);
+                headerAct = headerActions(company);
+                if(headerAct != null) {
+                	return headerAct;
+                }
                 
                 //check price
                 printToScreen("  Please enter the selling PRICE: ");
@@ -521,11 +573,20 @@ public class StateHandler
                 
                 //Check to see fi teh item has an associated lead singer
                 printToScreen("  Does this item have an associated lead singer? Y/N");
-                boolean hasLeadSinger = yesno(getInput(1));
+                in = getInput(1);
+                headerAct = headerActions(in);
+                if(headerAct != null) {
+                	return headerAct;
+                }
+                boolean hasLeadSinger = yesno(in);
                 String sname = "";
                 if(hasLeadSinger){
                     printToScreen("  Please enter name of the lead singers.");
                     sname = getInput(40);
+                    headerAct = headerActions(sname);
+                    if(headerAct != null) {
+                    	return headerAct;
+                    }
                 }
                 
                 printToScreen("  Does this item have an associated list of songs? Y/N");
@@ -536,13 +597,22 @@ public class StateHandler
                     while(!allSongs){
                         printToScreen("  Please enter the title of the next song");
                         String nextSong = getInput(50);
+                        headerAct = headerActions(nextSong);
+                        if(headerAct != null) {
+                        	return headerAct;
+                        }
                         if(!songs.contains(nextSong)){
                             printToScreen("  This song has already been added to the song list");
                         }else{
                             songs.add(nextSong);
                         }
                         printToScreen("  Are there any more songs that you would like to add? Y/N");
-                        allSongs = !(yesno(getInput(1))); //If there are more songs, then yes, keep adding
+                        in = getInput(1);
+                        headerAct = headerActions(in);
+                        if(headerAct != null) {
+                        	return headerAct;
+                        }
+                        allSongs = !(yesno(in)); //If there are more songs, then yes, keep adding
                     }
                 }
                 
@@ -575,7 +645,12 @@ public class StateHandler
                     printToScreen("  Error: the item was not added to the database");
                 }
                 printToScreen("  Would you like to add more items?Y/N");
-                boolean moreItems = yesno(getInput(1));
+                in = getInput(1);
+                headerAct = headerActions(in);
+                if(headerAct != null) {
+                	return headerAct;
+                }
+                boolean moreItems = yesno(in);
                 if(!moreItems){
                     return st.MGRSTART;
                 }
@@ -594,6 +669,10 @@ public class StateHandler
     {
         printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
         String receiptID = getInput();
+        State headerAct = headerActions(receiptID);
+        if(headerAct != null) {
+        	return headerAct;
+        }
         boolean isReceiptIDValid;
         if(true /* (select * from Order where receiptId = _receiptID) returns empty*/){
             isReceiptIDValid = false;
@@ -604,9 +683,18 @@ public class StateHandler
             printToScreen("  Invalid receiptId entered. ");
             printToScreen("  Please enter the ReceiptID of the order you wish to update: ");
             receiptID = getInput();
+            headerAct = headerActions(receiptID);
+            if(headerAct != null) {
+            	return headerAct;
+            }
         }
         printToScreen("  Has this order been shipped? Y/N");
-        boolean wasUpdated = yesno(getInput(1));
+        String in = getInput(1);
+        headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        boolean wasUpdated = yesno(in);
         if(wasUpdated){
             java.util.Date currentday = new java.util.Date();
             Date date = new Date(currentday.getTime());
@@ -620,7 +708,12 @@ public class StateHandler
         }
     
         printToScreen("  Would you like to update another? Y/N");
-        boolean another = yesno(getInput(1));
+        in = getInput(1);
+        headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        boolean another = yesno(in);
         if(!another){
            return st.MGRSTART;
         }
@@ -639,6 +732,10 @@ public class StateHandler
             printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
             
             date = getInput(10);
+            State headerAct = headerActions(date);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             invalidDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", date);
             //invalidDate = (validate date)
             if(!invalidDate){
@@ -660,22 +757,27 @@ public class StateHandler
         boolean foundDate = (!dsp.isEmpty()) ? true : false;
         if(foundDate){
             //Build the report
-        	printToScreen("  UPC, Category, Price, Sold, Total");
-        	printToScreen(" -----------------------------------");
-        	for(int i = 0; i < dsp.size()-1; i++ )
-        	{
-        		printToScreen("  " + dsp.get(i).getUpc() + ", " + dsp.get(i).getCategory() + ", $" + dsp.get(i).getPrice() + ", " + dsp.get(i).getSold() + ", " + dsp.get(i).getTotal() );
-        	}
-        	printToScreen(" -----------------------------------");
-        	printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
-        	printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
+            printToScreen("  UPC, Category, Price, Sold, Total");
+            printToScreen(" -----------------------------------");
+            for(int i = 0; i < dsp.size()-1; i++ )
+            {
+                printToScreen("  " + dsp.get(i).getUpc() + ", " + dsp.get(i).getCategory() + ", $" + dsp.get(i).getPrice() + ", " + dsp.get(i).getSold() + ", " + dsp.get(i).getTotal() );
+            }
+            printToScreen(" -----------------------------------");
+            printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
+            printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
             printToScreen("  Press enter when you are finished.");
             String dummy = getInput();
             return st.MGRSTART;
         }else{
             printToScreen("  Sorry, the date you specified contains no sales information.");
             printToScreen("  Would you like to enter another date? Y/N:");
-            boolean again = yesno(getInput(1));
+            String in = getInput(1);
+            State headerAct = headerActions(in);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+            boolean again = yesno(in);
             if(again){
                 return st.DSRINIT;
             }else{
@@ -699,6 +801,10 @@ public class StateHandler
             printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
             
             date = getInput(10);
+            State headerAct = headerActions(date);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             invalidDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", date);
             //invalidDate = (validate date)
             if(!invalidDate){
@@ -710,6 +816,10 @@ public class StateHandler
         while(!invalidNumber){
             printToScreen("  Please enter the number of items you would like to see:");
             num = getInput();
+            State headerAct = headerActions(num);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             //a valid number is a number with at least one digit beginning with [1-9] followed be 0 to many other digits[0-9]
             invalidNumber = Pattern.matches("[1-9]+[0-9]*", num);
             //Check to ensure number is an int, set invalidNumber
@@ -726,13 +836,13 @@ public class StateHandler
         boolean success = true;
         if(success){
             //-Format the result of the query records separated by newline characters- 
-        	printToScreen("  UPC, Title, Category, Stock, Sold");
-        	printToScreen(" -----------------------------------");
-        	for(int i = 0; i < topN.size(); i++)
+            printToScreen("  UPC, Title, Category, Stock, Sold");
+            printToScreen(" -----------------------------------");
+            for(int i = 0; i < topN.size(); i++)
             {
-        		printToScreen("  " + topN.get(i).getUpc() + ", " + topN.get(i).getTitle() + ", " + topN.get(i).getCategory() + ", " + topN.get(i).getStock() +  ", " + topN.get(i).getSold() );
+                printToScreen("  " + topN.get(i).getUpc() + ", " + topN.get(i).getTitle() + ", " + topN.get(i).getCategory() + ", " + topN.get(i).getStock() +  ", " + topN.get(i).getSold() );
             }
-        	printToScreen(" -----------------------------------");
+            printToScreen(" -----------------------------------");
             return st.NTSRSUCCESS;
         }else{
             return st.NTSRFAILURE;
@@ -763,18 +873,20 @@ public class StateHandler
      */
     public State CUSTSTART()
     {
-        printToScreen("  Search - 's', View Basket - 'v', logout - 'q', exit - 'x'");
+    	printHeader();
+        printToScreen("  Search - 's', View Basket - 'v'");
         String in = getInput(1);
         //HEADER TRANSITIONS
-
+        
+        State headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
         if(in.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
         }else if(in.equalsIgnoreCase("v")){
             return st.VIEWVSB;
-        }else if(in.equalsIgnoreCase("q")){
-            return st.INITIAL;
-        }else if(in.equalsIgnoreCase("x")){
-            return st.EXIT;
         }else{//Do nothing
             return st.CUSTSTART;
         }
@@ -786,33 +898,85 @@ public class StateHandler
     public State SEARCHSTATE()
     {
         printToScreen("  Would you like to search by category? Y/N");
-        String category = "";
-        boolean sbc = yesno(getInput(1));
+        String category = null;
+        String in = getInput(1);
+        
+        State headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
+        boolean sbc = yesno(in);
+        
         if(sbc){
             printToScreen("  Please enter one of the following categories: 'pop', 'rock', ");
             printToScreen("  'rap', 'country', 'classical', 'new age', or 'instrumental'/");
             boolean validCategory = false;
             while(!validCategory){
                 category = getInput(12);
+                headerAct = headerActions(category);
+                if(headerAct != null) {
+                	return headerAct;
+                }
                 validCategory = ec.isValidCategory(category);
                 if(!validCategory){
-                    printToScreen("  This is not a vali dcategory.");
+                    printToScreen("  This is not a valid category.");
                 }
             }
         }
         
         //Search item by title
         printToScreen("Would you like to search by item title? Y/N");
-        boolean sbt = yesno(getInput(1));
-        String title = "";
+        in = getInput(1);
+        
+        headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
+        boolean sbt = yesno(in);
+        String title = null;
         if(sbt){
             printToScreen("  Please enter the title of the item that you would like to search for.");
             title = getInput(50);
+            
+            headerAct = headerActions(title);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+            
         }
 
+        printToScreen("  Would you like to search by the leading singer? Y/N");
+        in = getInput(40);
         
-        if(category.equals("") && title.equals("")){
+        headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
+        boolean sbl = yesno(in);
+        
+        String leadSinger = null;
+        if(sbl){
+            printToScreen("  Please enter the lead singer of the item that you would like to search for");
+            leadSinger = getInput(20);
+            headerAct = headerActions(leadSinger);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+        }
+        
+        if(category == null && title == null && leadSinger == null){
             return st.SEARCHFAILED;
+        }
+        
+        try{
+            searchedItems.clear();
+            List<SearchItem> it = database.selectItemSearch(category, title, leadSinger);
+            searchedItems.addAll(it);
+        }catch(Exception e){
+            printToScreen(e.getMessage());
         }
         
         //LIST ITEMS - IMCOMPLETE!!!
@@ -839,12 +1003,25 @@ public class StateHandler
      */
     public State SELECTITEM()
     {
+        printItems(searchedItems);
         printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
+        
+        State headerAct = headerActions(upc);
+        if(headerAct != null) {
+        	return headerAct;
+        }
+        
         if(upc.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
         }else{
-            Item toSelect = searchByUPC(searchedItems, upc);
+            SearchItem toSelect = null;
+            for(SearchItem s : searchedItems){
+                if(s.getUpc().equals(upc)){
+                    toSelect = s;
+                }
+            }
+            
             if(toSelect != null){
                 printToScreen("  Please enter the quantity that you wish to purchase");
                 boolean validQty = false;
@@ -884,8 +1061,9 @@ public class StateHandler
             }
             printToScreen("  Would you like to search for more items? Y/N");
             boolean moreItems  = yesno(getInput(1));
-            searchedItems.clear();
+
             if(!moreItems){
+                searchedItems.clear();
                 return st.CUSTSTART;
             }
         }
@@ -907,6 +1085,10 @@ public class StateHandler
             printToScreen("  If you would like to place an order for these items, please enter 'o'");
             printToScreen("  If you would like to continue searching for items, please enter 's'.");
             String choice = getInput(1);
+            State headerAct = headerActions(choice);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             if(choice.equalsIgnoreCase("c")){
                 return st.CLEARVSB;
             }else if(choice.equalsIgnoreCase("o")){
@@ -920,7 +1102,13 @@ public class StateHandler
         }else{
             printToScreen("  Your basket is squeaky clean and shiny, but empty!");
             printToScreen("  Would you like to search for items to fill it up? Y/N");
-            boolean fill = yesno(getInput(1));
+            String in = getInput(1);
+            State headerAct = headerActions(in);
+            if(headerAct != null) {
+            	return headerAct;
+            }
+            boolean fill = yesno(in);
+            
             if(fill){
                 return st.SEARCHSTATE;
             }else{
@@ -942,13 +1130,13 @@ public class StateHandler
     /**
      * @author Curtiis 
      */
-    public State PLACEHOLDER()
+    public State PLACEORDER()
     {
         if(VSB.isEmpty()){
             ORDERFAIL(0);
         }
         float total = 0;
-        for(Item i : VSB){
+        for(SearchItem i : VSB){
             total += i.getStock() * i.getPrice();
         }
         printToScreen("  The total price for your order is: $" + total);
@@ -967,9 +1155,9 @@ public class StateHandler
      */
     public State CHECKQTYFINAL()
     {
-        ArrayList<Item> toRemove = new ArrayList<Item>(); 
+        ArrayList<SearchItem> toRemove = new ArrayList<SearchItem>(); 
         //This is to prevent a concurrent modificatio nexception
-        for(Item i : VSB){
+        for(SearchItem i : VSB){
             Item compare = null;
             try{
                 compare = database.selectItemByUpc(i.getUpc());
@@ -996,11 +1184,11 @@ public class StateHandler
         
         //Remove the bad items from the order
         if(!toRemove.isEmpty()){
-            for(Item i : toRemove){
+            for(SearchItem i : toRemove){
                 VSB.remove(i);
             }
         }
-        return null;
+        return st.PAYFORORDER;
     }
     
     /**
@@ -1015,6 +1203,12 @@ public class StateHandler
             printToScreen("  Please enter your credit card number.");
             cardnum = getInput(16);
             validCard = Pattern.matches("[0-9]{16}", cardnum);//ec.checkNumLength(cardnum, 16); //THIS IS A HACK!!!
+
+            State headerAct = headerActions(cardnum);
+            if(headerAct != null) {
+            	return headerAct;
+            };
+
             if(!validCard){
                 printToScreen("  This is not a valid credit card number.");
             }
@@ -1025,6 +1219,10 @@ public class StateHandler
             printToScreen("  Please enter your credit card's expiration date");
             printToScreen("  The format for the date is yyyy-mm-dd.");
             cardDate = getInput(10);
+            State headerAct = headerActions(cardDate);
+            if(headerAct != null) {
+            	return headerAct;
+            }
             //Validate that the date is valid 
             validDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", cardDate);
             if(!validDate){
@@ -1056,8 +1254,13 @@ public class StateHandler
     public State ORDERFINAL()
     {
         printToScreen("  Are you sure you would like to place this order?"); 
-        printToScreen("  Once confirmed, the order will be final. Y/N"); 
-        boolean fconfirm = yesno(getInput(1));
+        printToScreen("  Once confirmed, the order will be final. Y/N");
+        String in = getInput(1);
+        boolean fconfirm = yesno(in);
+        State headerAct = headerActions(in);
+        if(headerAct != null) {
+        	return headerAct;
+        }
         if(fconfirm){
             return st.RECEIPT;
         }else{
@@ -1218,7 +1421,7 @@ public class StateHandler
     /**
      * @author Chazz Young
      */
-    public  void printItems(ArrayList<Item> items)
+    public  void printItems(ArrayList<SearchItem> items)
     {
         printToScreen(" UPC, title, Type, Category, Company, Year, Price, Stock");
         
@@ -1257,9 +1460,9 @@ public class StateHandler
      * @return the item that matches the UPC specified or null
      * @author Chazz Young
      */
-    private Item searchByUPC(ArrayList<Item> items, String upc)
+    private SearchItem searchByUPC(ArrayList<SearchItem> items, String upc)
     {
-        for(Item i : items){
+        for(SearchItem i : items){
             if(i.getUpc() == upc){
                 return i;
             }
@@ -1280,6 +1483,34 @@ public class StateHandler
         }
         return null;
     }
+
+    /**
+     * @return prints the header displayed at the beginning of input states
+     * @author Curtis
+     */
+	private void printHeader() {
+		printToScreen("  --------------------------------------------------");
+		printToScreen("  If you would like to log out, enter 'q' at any input.");
+		printToScreen("  If you would like to exit, enter 'x' at any input.");
+		printToScreen("  --------------------------------------------------");
+	}
+	
+	
+	/**
+     * @return handles input for logging out and exiting
+     * @author Curtis
+     */
+	private State headerActions(String in) {
+	 if(in.equalsIgnoreCase("q")){
+         return st.INITIAL;
+     }
+	 else if(in.equalsIgnoreCase("x")){
+         return st.EXIT;
+	 }
+     else{
+    	 return null;
+     }
+	
 }
 
 /**
@@ -1314,4 +1545,5 @@ class InputReader
         String inputLine = reader.nextLine();
         return inputLine;
     }
+}
 }

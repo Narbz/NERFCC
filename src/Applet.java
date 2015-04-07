@@ -95,12 +95,9 @@ public class Applet
             }else if(st == State.CLEARVSB){/**@author Farhoud*/
                 st = sh.CLEARVSB();
             }else if(st == State.PLACEORDER){/**@author Curtis */
-                //check to make sure the VSB is not empty
-                //calculate total for the order
-                //printToScreen("  The total amount for this order is: " + <total> +".");
-                
+                st = sh.PLACEORDER();
             }else if(st == State.CHECKQTYFINAL){
-                //done later
+                st = sh.CHECKQTYFINAL();
             }else if(st == State.PAYFORORDER){/**@author Curtis REVISIONS */
                 st = sh.PAYFORORDER();
             }else if(st == State.ORDERFINAL){/**@author Curtis*/
