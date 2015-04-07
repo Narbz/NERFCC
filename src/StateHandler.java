@@ -29,7 +29,7 @@ public class StateHandler
     private final Customer mgr1 = new Customer("Manager", "Manager Bob", "password", "1233 ams Street", "6046046040");
     
     //Lists for item management
-    private ArrayList<Item> VSB, searchedItems;
+    private ArrayList<SearchItem> VSB, searchedItems;
     private ArrayList<PurchaseItem> orderItems, INSFStock;
     private ArrayList<ReturnItem> retItems;
     
@@ -47,8 +47,8 @@ public class StateHandler
         cust = null;
         database = new ams();
         
-        searchedItems = new ArrayList<Item>();
-        VSB = new ArrayList<Item>();
+        searchedItems = new ArrayList<SearchItem>();
+        VSB = new ArrayList<SearchItem>();
         orderItems = new ArrayList<PurchaseItem>();INSFStock = new ArrayList<PurchaseItem>(); 
         retItems = new ArrayList<ReturnItem>();
         order = null;
@@ -657,15 +657,15 @@ public class StateHandler
         boolean foundDate = (!dsp.isEmpty()) ? true : false;
         if(foundDate){
             //Build the report
-        	printToScreen("  UPC, Category, Price, Sold, Total");
-        	printToScreen(" -----------------------------------");
-        	for(int i = 0; i < dsp.size()-1; i++ )
-        	{
-        		printToScreen("  " + dsp.get(i).getUpc() + ", " + dsp.get(i).getCategory() + ", $" + dsp.get(i).getPrice() + ", " + dsp.get(i).getSold() + ", " + dsp.get(i).getTotal() );
-        	}
-        	printToScreen(" -----------------------------------");
-        	printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
-        	printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
+            printToScreen("  UPC, Category, Price, Sold, Total");
+            printToScreen(" -----------------------------------");
+            for(int i = 0; i < dsp.size()-1; i++ )
+            {
+                printToScreen("  " + dsp.get(i).getUpc() + ", " + dsp.get(i).getCategory() + ", $" + dsp.get(i).getPrice() + ", " + dsp.get(i).getSold() + ", " + dsp.get(i).getTotal() );
+            }
+            printToScreen(" -----------------------------------");
+            printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
+            printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
             printToScreen("  Press enter when you are finished.");
             String dummy = getInput();
             return st.MGRSTART;
@@ -723,13 +723,13 @@ public class StateHandler
         boolean success = true;
         if(success){
             //-Format the result of the query records separated by newline characters- 
-        	printToScreen("  UPC, Title, Category, Stock, Sold");
-        	printToScreen(" -----------------------------------");
-        	for(int i = 0; i < topN.size(); i++)
+            printToScreen("  UPC, Title, Category, Stock, Sold");
+            printToScreen(" -----------------------------------");
+            for(int i = 0; i < topN.size(); i++)
             {
-        		printToScreen("  " + topN.get(i).getUpc() + ", " + topN.get(i).getTitle() + ", " + topN.get(i).getCategory() + ", " + topN.get(i).getStock() +  ", " + topN.get(i).getSold() );
+                printToScreen("  " + topN.get(i).getUpc() + ", " + topN.get(i).getTitle() + ", " + topN.get(i).getCategory() + ", " + topN.get(i).getStock() +  ", " + topN.get(i).getSold() );
             }
-        	printToScreen(" -----------------------------------");
+            printToScreen(" -----------------------------------");
             return st.NTSRSUCCESS;
         }else{
             return st.NTSRFAILURE;
@@ -783,8 +783,9 @@ public class StateHandler
     public State SEARCHSTATE()
     {
         printToScreen("  Would you like to search by category? Y/N");
-        String category = "";
+        String category = null;
         boolean sbc = yesno(getInput(1));
+        
         if(sbc){
             printToScreen("  Please enter one of the following categories: 'pop', 'rock', ");
             printToScreen("  'rap', 'country', 'classical', 'new age', or 'instrumental'/");
@@ -801,15 +802,30 @@ public class StateHandler
         //Search item by title
         printToScreen("Would you like to search by item title? Y/N");
         boolean sbt = yesno(getInput(1));
-        String title = "";
+        String title = null;
         if(sbt){
             printToScreen("  Please enter the title of the item that you would like to search for.");
             title = getInput(50);
         }
 
+        printToScreen("  Would you liek to search by the leading singer? Y/N");
+        boolean sbl = yesno(getInput(40));
         
-        if(category.equals("") && title.equals("")){
+        String leadSinger = null;
+        if(sbl){
+            printToScreen("  Please enter the lead singer of the item that you would like to search for");
+        }
+        
+        if(category == null && title == null && leadSinger == null){
             return st.SEARCHFAILED;
+        }
+        
+        try{
+            searchedItems.clear();
+            List<SearchItem> it = database.selectItemSearch(category, title, leadSinger);
+            searchedItems.addAll(it);
+        }catch(Exception e){
+            printToScreen(e.getMessage());
         }
         
         //LIST ITEMS - IMCOMPLETE!!!
@@ -836,12 +852,20 @@ public class StateHandler
      */
     public State SELECTITEM()
     {
+        printItems(searchedItems);
         printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
+        
         if(upc.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
         }else{
-            Item toSelect = searchByUPC(searchedItems, upc);
+            SearchItem toSelect = null;
+            for(SearchItem s : searchedItems){
+                if(s.getUpc().equals(upc)){
+                    toSelect = s;
+                }
+            }
+            
             if(toSelect != null){
                 printToScreen("  Please enter the quantity that you wish to purchase");
                 boolean validQty = false;
@@ -881,8 +905,9 @@ public class StateHandler
             }
             printToScreen("  Would you like to search for more items? Y/N");
             boolean moreItems  = yesno(getInput(1));
-            searchedItems.clear();
+
             if(!moreItems){
+                searchedItems.clear();
                 return st.CUSTSTART;
             }
         }
@@ -939,13 +964,13 @@ public class StateHandler
     /**
      * @author Curtiis 
      */
-    public State PLACEHOLDER()
+    public State PLACEORDER()
     {
         if(VSB.isEmpty()){
             ORDERFAIL(0);
         }
         float total = 0;
-        for(Item i : VSB){
+        for(SearchItem i : VSB){
             total += i.getStock() * i.getPrice();
         }
         printToScreen("  The total price fo ryour order is: " + total);
@@ -964,9 +989,9 @@ public class StateHandler
      */
     public State CHECKQTYFINAL()
     {
-        ArrayList<Item> toRemove = new ArrayList<Item>(); 
+        ArrayList<SearchItem> toRemove = new ArrayList<SearchItem>(); 
         //This is to prevent a concurrent modificatio nexception
-        for(Item i : VSB){
+        for(SearchItem i : VSB){
             Item compare = null;
             try{
                 compare = database.selectItemByUpc(i.getUpc());
@@ -993,11 +1018,11 @@ public class StateHandler
         
         //Remove the bad items from the order
         if(!toRemove.isEmpty()){
-            for(Item i : toRemove){
+            for(SearchItem i : toRemove){
                 VSB.remove(i);
             }
         }
-        return null;
+        return st.PAYFORORDER;
     }
     
     /**
@@ -1169,7 +1194,7 @@ public class StateHandler
     /**
      * @author Chazz Young
      */
-    public  void printItems(ArrayList<Item> items)
+    public  void printItems(ArrayList<SearchItem> items)
     {
         printToScreen(" UPC, title, Type, Category, Company, Year, Price, Stock");
         
@@ -1208,9 +1233,9 @@ public class StateHandler
      * @return the item that matches the UPC specified or null
      * @author Chazz Young
      */
-    private Item searchByUPC(ArrayList<Item> items, String upc)
+    private SearchItem searchByUPC(ArrayList<SearchItem> items, String upc)
     {
-        for(Item i : items){
+        for(SearchItem i : items){
             if(i.getUpc() == upc){
                 return i;
             }
