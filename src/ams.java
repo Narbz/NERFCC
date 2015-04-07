@@ -291,6 +291,7 @@ public class ams {
       public List<DailySalesReport> selectDailySalesReport(String date)  throws IOException, SQLException
       {
     	  float runningTotalForTheDay = 0;
+    	  int totalQuantitySold = 0;
     	  //HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
           SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
@@ -308,9 +309,11 @@ public class ams {
           for(int i = 0; i < item_list.size(); i++)
           {
         	  runningTotalForTheDay += item_list.get(i).getTotal();
+        	  totalQuantitySold += item_list.get(i).getSold();
           }
           DailySalesReport s = new DailySalesReport();
           s.setTotal(runningTotalForTheDay);
+          s.setSold(totalQuantitySold);
           //add to the end of the list
           item_list.add(s);
           return item_list;

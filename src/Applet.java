@@ -1,3 +1,4 @@
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.HashSet;
@@ -14,8 +15,10 @@ public class Applet
 
     /**
      * Constructor for objects of class Applet
+     * @throws IOException 
+     * @throws SQLException 
      */
-    public Applet()
+    public Applet() throws SQLException, IOException
     {
         st = st.INITIAL;
         sh = new StateHandler();
@@ -32,8 +35,10 @@ public class Applet
      * At the end of each state, there is a setState() function which will 
      * determine the next state. Note that this may be teh same state as before.
      * @author Chazz Young
+     * @throws IOException 
+     * @throws SQLException 
      */
-    public void start()
+    public void start() throws SQLException, IOException
     {
         
         boolean fin = false;
@@ -60,8 +65,9 @@ public class Applet
             }else if(st == State.PROCDELIVERY){/**@author narbeh*/
                 st = sh.PROCDELIVERY();
             }else if(st == State.DSRINIT){
-                System.out.println("***********INCOMPLETE****************");
-                fin = true;
+                st = sh.DSRINIT();
+            	//System.out.println("***********INCOMPLETE****************");
+                //fin = true;
             }else if(st == State.DSRSUCCESS){
                 System.out.println("***********INCOMPLETE****************");
                 fin = true;
@@ -111,7 +117,7 @@ public class Applet
         }
     }
     
-    public static void main(String[] args){
+    public static void main(String[] args) throws SQLException, IOException{
         new Applet();
     }
 }

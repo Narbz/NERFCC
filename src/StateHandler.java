@@ -1,9 +1,12 @@
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.util.Calendar;
 import java.sql.Date;
 import java.util.Scanner;
+import java.util.regex.*;
+import java.math.*;
 /**
  * The StateHandler class is used to handle all methods that occur in a given state.
  * 
@@ -617,7 +620,7 @@ public class StateHandler
     /**
      * @author Narbeh
      */
-    public State DSRINIT()
+    public State DSRINIT() throws SQLException, IOException
     {
         String date = null;
         boolean invalidDate = true;
@@ -626,8 +629,9 @@ public class StateHandler
             printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
             
             date = getInput(10);
+            invalidDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", date);
             //invalidDate = (validate date)
-            if(invalidDate){
+            if(!invalidDate){
                 printToScreen("  This is not a valid date");
             }else{
                 //Method to determine whether the date given is in the future
@@ -639,12 +643,22 @@ public class StateHandler
                 }
             }
         }
+
+        //execute the daily sales report function
+        List<DailySalesReport> dsp = database.selectDailySalesReport(date);
         
-        //execute the daily ales report function
-        
-        boolean foundDate = true;
+        boolean foundDate = (!dsp.isEmpty()) ? true : false;
         if(foundDate){
             //Build the report
+        	printToScreen("  UPC, Category, Price, Sold, Total");
+        	printToScreen(" -----------------------------------");
+        	for(int i = 0; i < dsp.size()-1; i++ )
+        	{
+        		printToScreen("  " + dsp.get(i).getUpc() + ", " + dsp.get(i).getCategory() + ", $" + dsp.get(i).getPrice() + ", " + dsp.get(i).getSold() + ", " + dsp.get(i).getTotal() );
+        	}
+        	printToScreen(" -----------------------------------");
+        	printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
+        	printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
             printToScreen("  Press enter when you are finished.");
             String dummy = getInput();
             return st.MGRSTART;
@@ -662,29 +676,34 @@ public class StateHandler
     
     /**
      * @author Narbeh REVISIONS
+     * @throws SQLException 
+     * @throws IOException 
+     * @throws NumberFormatException 
      */
-    public State NTSRINIT()
+    public State NTSRINIT() throws NumberFormatException, IOException, SQLException
     {
         String date = null;
-        boolean invalidDate = true;
+        boolean invalidDate = false;
                 
-        while(invalidDate){
+        while(!invalidDate){
             printToScreen("  Please enter the DATE in the format yyyy-mm-dd:");
             
             date = getInput(10);
+            invalidDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", date);
             //invalidDate = (validate date)
-            if(invalidDate){
+            if(!invalidDate){
                 printToScreen("  This is not a valid date");
             }
         }
         String num = null;;
-        boolean invalidNumber = true;
-        while(invalidNumber){
+        boolean invalidNumber = false;
+        while(!invalidNumber){
             printToScreen("  Please enter the number of items you would like to see:");
-            num = getInput(); //Limits?
-            //convert num to int
+            num = getInput();
+            //a valid number is a number with at least one digit beginning with [1-9] followed be 0 to many other digits[0-9]
+            invalidNumber = Pattern.matches("[1-9]+[0-9]*", num);
             //Check to ensure number is an int, set invalidNumber
-            if(invalidNumber){
+            if(!invalidNumber){
                 printToScreen("  This is not a valid number");
                 //loop back
             }
@@ -692,10 +711,18 @@ public class StateHandler
         }
     
         //<execute selectTopNItems>, set success here
+        List<SearchTopNitems> topN = database.selectTopNItems(Integer.parseInt(num), date);
+        
         boolean success = true;
         if(success){
             //-Format the result of the query records separated by newline characters- 
-            //<display the data>
+        	printToScreen("  UPC, Title, Category, Stock, Sold");
+        	printToScreen(" -----------------------------------");
+        	for(int i = 0; i < topN.size(); i++)
+            {
+        		printToScreen("  " + topN.get(i).getUpc() + ", " + topN.get(i).getTitle() + ", " + topN.get(i).getCategory() + ", " + topN.get(i).getStock() +  ", " + topN.get(i).getSold() );
+            }
+        	printToScreen(" -----------------------------------");
             return st.NTSRSUCCESS;
         }else{
             return st.NTSRFAILURE;
