@@ -5,17 +5,19 @@ public class Order extends Record {
 	private int recieptId;
 	private Date date;
 	private String cid;
+	private long cardNum; 
 	private Date expriyDate;
 	private Date expectedDate;
 	private Date deliveredDate;
 	
 	//Constructor - we will use this in the future to begin a insertion. i.e we first will create an Order object and use myBatis to insert this object
-	public Order(int recieptId, Date date, String cid, Date expriyDate,
+	public Order(int recieptId, Date date, String cid, long cardNum, Date expriyDate,
 			Date expectedDate, Date deliveredDate) {
 		super();
 		this.recieptId = recieptId;
 		this.date = date;
 		this.cid = cid;
+		this.cardNum = cardNum;
 		this.expriyDate = expriyDate;
 		this.expectedDate = expectedDate;
 		this.deliveredDate = deliveredDate;
@@ -62,6 +64,14 @@ public class Order extends Record {
 	}
 	public void setDeliveredDate(Date deliveredDate) {
 		this.deliveredDate = deliveredDate;
+	}
+
+	public long getCardNum() {
+		return cardNum;
+	}
+
+	public void setCardNum(long cardNum) {
+		this.cardNum = cardNum;
 	}
 	
 }

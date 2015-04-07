@@ -1,4 +1,5 @@
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.HashSet;
@@ -17,8 +18,9 @@ public class Applet
      * Constructor for objects of class Applet
      * @throws IOException 
      * @throws SQLException 
+     * @throws ParseException 
      */
-    public Applet() throws SQLException, IOException
+    public Applet() throws SQLException, IOException, ParseException
     {
         st = st.INITIAL;
         sh = new StateHandler();
@@ -37,8 +39,9 @@ public class Applet
      * @author Chazz Young
      * @throws IOException 
      * @throws SQLException 
+     * @throws ParseException 
      */
-    public void start() throws SQLException, IOException
+    public void start() throws SQLException, IOException, ParseException
     {
         
         boolean fin = false;
@@ -117,7 +120,7 @@ public class Applet
         }
     }
     
-    public static void main(String[] args) throws SQLException, IOException{
+    public static void main(String[] args) throws SQLException, IOException, ParseException{
         new Applet();
     }
 }

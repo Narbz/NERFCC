@@ -9,7 +9,7 @@ public class Return extends Record {
 	private Date date;
 	
 	public Return(int retid, int receiptId, Date date) {
-		super();
+		//super();
 		this.retid = retid;
 		this.receiptId = receiptId;
 		this.date = date;

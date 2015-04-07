@@ -3,7 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.*;
 import java.util.Calendar;
-import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.*;
 import java.math.*;
@@ -303,11 +305,12 @@ public class StateHandler
                 }
             
                 int receiptId = toReturn.getReceiptID();
-            
-                java.util.Date currentday = new java.util.Date();
-                Date date = new Date(currentday.getTime());
+                
+                java.sql.Date currentday = (java.sql.Date) new Date();
+                //Date date = new Date(currentday.getTime());
+                
                 try {
-                    Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
+                    Return ret = new Return(retItems.get(0).getRetid() , receiptId , currentday);
                     database.insertReturn(ret);
                     for(int j = 0; j < retItems.size(); j++){
                         database.insertReturnItem(retItems.get(j));
@@ -911,7 +914,7 @@ public class StateHandler
             }else if(choice.equalsIgnoreCase("s")){
                 return st.SEARCHSTATE;
             }else{
-                printToScreen("  This is not a valid coice.");
+                printToScreen("  This is not a valid choice.");
                 return st.VIEWVSB;
             }
         }else{
@@ -948,7 +951,7 @@ public class StateHandler
         for(Item i : VSB){
             total += i.getStock() * i.getPrice();
         }
-        printToScreen("  The total price fo ryour order is: " + total);
+        printToScreen("  The total price for your order is: $" + total);
         printToScreen("  Would you like to place this order? Y/N");
         boolean place = yesno(getInput(1));
         if(place){
@@ -1002,15 +1005,16 @@ public class StateHandler
     
     /**
      * @author 
+     * @throws ParseException 
      */
-    public State PAYFORORDER()
+    public State PAYFORORDER() throws ParseException
     {
         boolean validCard = false;
         String cardnum = null;
         while(!validCard){
             printToScreen("  Please enter your credit card number.");
             cardnum = getInput(16);
-            validCard = ec.checkNumLength(cardnum, 16); //THIS IS A HACK!!!
+            validCard = Pattern.matches("[0-9]{16}", cardnum);//ec.checkNumLength(cardnum, 16); //THIS IS A HACK!!!
             if(!validCard){
                 printToScreen("  This is not a valid credit card number.");
             }
@@ -1022,14 +1026,23 @@ public class StateHandler
             printToScreen("  The format for the date is yyyy-mm-dd.");
             cardDate = getInput(10);
             //Validate that the date is valid 
-            validDate = true;
+            validDate = Pattern.matches("[0-9]{4}[-][0-9]{2}[-][0-9]{2}", cardDate);
             if(!validDate){
                 printToScreen("  This is not a valid date.");
             }
         }
-        //Validate credit card process???
-        boolean validated = true;
+        //create a date based on the user's input
+        String expectedPattern = "yyyy-MM-dd";
+        SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
+        Date _cardDate = formatter.parse(cardDate);
+        
+        //Validate credit card process via ensuring expiration date is after the present date
+        boolean validated =  _cardDate.after(new Date());//Pattern.matches("[0-9]{16}", cardnum) &&
         if(validated){
+        	order = new Order();
+        	order.setCid(cust.getCID());
+        	order.setExpriyDate(_cardDate);
+        	order.setCardNum(Long.parseLong(cardnum));
             return st.ORDERFINAL;
         }else{
             printToScreen("  The credit card that you entered could not be validated.");
@@ -1053,17 +1066,52 @@ public class StateHandler
     }
     
     /**
-     * @author 
+     * @author Narbeh
+     * TODO: 
+     * @throws ParseException 
+     * @throws SQLException 
+     * @throws IOException 
      */
-    public State RECEIPT()
+    public State RECEIPT() throws ParseException, IOException, SQLException
     {
         //Generate order receipt number
         //Generate receiptID and expected date
+    	String datePattern = "yyyy-MM-dd";
+    	SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
+    	String orderDate = formatter.format(new Date());
+    	Date _orderDate = new SimpleDateFormat(datePattern).parse(orderDate);
+    	
+    	//expectedDeliveryDate
+    	Calendar cal = Calendar.getInstance();
+    	//make delivery date 7 days from the current time
+    	cal.add(Calendar.DATE, 7);
+    	String expectedDate = formatter.format(cal);
+    	Date _expectedDate = new SimpleDateFormat(datePattern).parse(expectedDate);
+    	
+    	order.setDate(_orderDate);
+    	order.setExpectedDate(_expectedDate);
+    	
+    	int receiptId = database.selectLatestPurchaseReceiptId() + 1;
+    	order.setRecieptId(receiptId);
+    	
+    	//if insert is successful, didInsert should be 1, 0 otherwise
+    	int didInsert = database.insertOrder(order);
+    	
         //Attempt to add to the database, set boolean successful
-        boolean successful = true;
+        boolean successful = (didInsert > 0) ? true:false;
         if(successful){
-            printToScreen("  Thank you for your order! Your order number is: " /*+ <receiptID>*/);
-            printToScreen("  Your order will arrive in approximately " + /*<shipTime + */ " days");
+        	//begin to fill the PurchaseItem table with the items from the basket
+        	PurchaseItem p = new PurchaseItem();
+        	for(int i = 0; i < VSB.size(); i++)
+        	{
+        		p.setReceiptID(receiptId);
+        		p.setUPC(VSB.get(i).getUpc());
+        		p.setQuantity(VSB.get(i).getStock());//The VSB is of type item, should really be of type purchaseItem
+        		database.insertPurchaseItem(p);
+        	}
+        	
+            printToScreen("  Thank you for your order! Your order number is: " + receiptId);
+            printToScreen("  Your order will arrive on approximately " + expectedDate );
             VSB.clear();
             orderItems.clear();
             searchedItems.clear();
@@ -1083,6 +1131,7 @@ public class StateHandler
             printToScreen("  item in you basket to place an order");
             return st.CUSTSTART;
         }else if(failtype == 1){
+        	order = null;
             printToScreen("  The order has been cancelled successfully!");
         }else if(failtype == 2){
             printToScreen("  The database failed to receive your order.");

@@ -439,20 +439,21 @@ public class ams {
     /**
      * @author Narbeh
      */
-    public void insertOrder(Order order) throws IOException, SQLException
+    public int insertOrder(Order order) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
         SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
         SqlSession session = smc.openSession();
         //END HEADER
-        
+        int status;
         //QUERY TO EXECUTE
-        session.insert("ams.insertOrder", order);
+        status = session.insert("ams.insertOrder", order);
         //FOOTER
         session.commit();
         session.close();
         //END FOOTER
+        return status;
     }
     
     /**
