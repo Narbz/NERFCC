@@ -83,10 +83,10 @@ public class StateHandler
         String username = getInput(50);
         printToScreen("  Please enter your password.");
         String password = getInput(40);
-        if(username.equals(clerk1.getCID()) && password.equals(clerk1.getPassword())){
+        if(username.equalsIgnoreCase(clerk1.getCID()) && password.equals(clerk1.getPassword())){
             cust = clerk1;
             return st.CLERKSTART;
-        }else if(username.equals(mgr1.getCID()) && password.equals(mgr1.getPassword())){
+        }else if(username.equalsIgnoreCase(mgr1.getCID()) && password.equals(mgr1.getPassword())){
             cust = mgr1;
             return st.MGRSTART;
         }
@@ -128,13 +128,13 @@ public class StateHandler
         String address = getInput(40);
         printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
         String phonenum = getInput(10);
-        boolean validNum = ec.checkPhoneNum(phonenum);
+        boolean validNum = ec.checkNumLength(phonenum, 10);
         while(!validNum){
             printToScreen("  The phone number you enter is not a valid phone number.");  
             printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
             printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
             phonenum = getInput(10);
-            validNum = ec.checkPhoneNum(phonenum);
+            validNum = ec.checkNumLength(phonenum, 10);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         boolean validUser = false;
@@ -180,12 +180,12 @@ public class StateHandler
      */
     public State CLERKSTART()
     {
-         printToScreen("  If you wish to process a return, please enter 'r'");
+        printToScreen("  If you wish to process a return, please enter 'r'");
         printToScreen("  If you wish to log out, please enter 'q'");
         String choice = getInput(1);
-        if(choice.toLowerCase().equals("r")){
+        if(choice.equalsIgnoreCase("r")){
             return st.PROCESSRETURN;  
-        }else if(choice.toLowerCase().equals("q")){
+        }else if(choice.equalsIgnoreCase("q")){
             return st.INITIAL;
         }else{//do nothing
             printToScreen("  This is not a valid operation.");
@@ -194,7 +194,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Chazz, Curtis
      */
     public State PROCESSRETURN()
     {
@@ -202,10 +202,11 @@ public class StateHandler
         printToScreen("  Please enter the receipt ID of the item(s) the customer wishes to return:");
         String rid = getInput();
         int canReturn = -1;
-        int receiptId = Integer.parseInt(rid);
+        
         try{
+            int receiptId = Integer.parseInt(rid);
             canReturn = database.selectReceiptToVerifyDate(rid);
-        	orderItems = (ArrayList<PurchaseItem>) database.selectPurchases(receiptId);
+            orderItems = (ArrayList<PurchaseItem>) database.selectPurchases(receiptId);
         }catch(Exception e){
             printToScreen(e.getMessage());
         }
@@ -213,7 +214,7 @@ public class StateHandler
         if(canReturn == 1){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            
+            printReturnItems(retItems);
             return st.RETURNITEMS;
         }else if(canReturn == 0){
             printToScreen("  The items in this receipt cannot be returned because");
@@ -226,7 +227,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Chazz, Curtis
      */
     public State RETURNITEMS()
     {
@@ -236,7 +237,7 @@ public class StateHandler
             printToScreen("  Please select the upc of the item that you"); 
             printToScreen("  wish to return, or 'd' if you are finished");
             String in = getInput(12); //instead of UPC
-            if(in.toLowerCase().equals("d")){
+            if(in.equalsIgnoreCase("d")){
                 allItems = true;
             }else{
                 while(ec.getUPC(in) == null){
@@ -246,11 +247,11 @@ public class StateHandler
                 PurchaseItem toReturn = null;
                 while(toReturn == null){
                     /*toReturn = searchUPC(orderItems, in);*/
-                	for(int i = 0; i < orderItems.size(); i++){
-                		if(in.equals(orderItems.get(i).getUPC())){
-                			toReturn = orderItems.get(i);
-                		}
-                	}
+                    for(int i = 0; i < orderItems.size(); i++){
+                        if(in.equals(orderItems.get(i).getUPC())){
+                            toReturn = orderItems.get(i);
+                        }
+                    }
                 }
             
             
@@ -260,7 +261,7 @@ public class StateHandler
                 int qty = -1;
                 while(qty == -1){ //invalid quantity
                     in = getInput(12);
-                    if(in.toLowerCase().equals("a")){
+                    if(in.equalsIgnoreCase("a")){
                         qty = toReturn.getQuantity();
                     }else{
                         qty = ec.getNum(in);
@@ -277,21 +278,21 @@ public class StateHandler
                 
                 int reid;
                 try {
-					reid = database.selectLatestReturnRetId();
-					ReturnItem i = new ReturnItem(reid+1, qty, toReturn.getUPC());
-					retItems.add(i);
-					orderItems.remove(toReturn);
-	                toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
-	                if(toReturn.getQuantity() > 0){//Add it back as there are still more 
-	                    orderItems.add(toReturn);
-	                }
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                    reid = database.selectLatestReturnRetId();
+                    ReturnItem i = new ReturnItem(reid+1, qty, toReturn.getUPC());
+                    retItems.add(i);
+                    orderItems.remove(toReturn);
+                    toReturn.setQuantity(toReturn.getQuantity() - i.getQuantity());
+                    if(toReturn.getQuantity() > 0){//Add it back as there are still more 
+                        orderItems.add(toReturn);
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 
                 
                 printToScreen("  Do you wish to include more items in this return? Y/N");
@@ -299,25 +300,25 @@ public class StateHandler
                 if(!moreItems){
                     allItems = true;
                 }else{ //continue
-            }
+                }
             
-            int receiptId = toReturn.getReceiptID();
+                int receiptId = toReturn.getReceiptID();
             
-            java.util.Date currentday = new java.util.Date();
-            Date date = new Date(currentday.getTime());
-			try {
-				Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
-				database.insertReturn(ret);
-            	for(int j = 0; j < retItems.size(); j++){
-            		database.insertReturnItem(retItems.get(j));
-            	}
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+                java.util.Date currentday = new java.util.Date();
+                Date date = new Date(currentday.getTime());
+                try {
+                    Return ret = new Return(retItems.get(0).getRetid() ,receiptId, date);
+                    database.insertReturn(ret);
+                    for(int j = 0; j < retItems.size(); j++){
+                        database.insertReturnItem(retItems.get(j));
+                    }
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
                 
                 
             }
@@ -330,7 +331,7 @@ public class StateHandler
     }
     
     /**
-     * @author Chazz
+     * @author Curtis, Chazz
      */
     public State RETURNCONFIRM()
     {
@@ -362,17 +363,17 @@ public class StateHandler
         printToScreen("  To log out, please enter 'q'");
         printToScreen("  To exit the program, please enter 'x'");
         String choice = getInput(1);
-        if(choice.toLowerCase().equals("a")){
+        if(choice.equalsIgnoreCase("a")){
             return st.ADDITEMS;
-        }else if(choice.toLowerCase().equals("p")){
+        }else if(choice.equalsIgnoreCase("p")){
             return st.PROCDELIVERY;
-        }else if(choice.toLowerCase().equals("d")){
+        }else if(choice.equalsIgnoreCase("d")){
             return st.DSRINIT;
-        }else if(choice.toLowerCase().equals("n")){
+        }else if(choice.equalsIgnoreCase("n")){
             return st.NTSRINIT;
-        }else if(choice.toLowerCase().equals("q")){
+        }else if(choice.equalsIgnoreCase("q")){
             return st.INITIAL;
-        }else if(choice.toLowerCase().equals("x")){
+        }else if(choice.equalsIgnoreCase("x")){
             return st.EXIT;
         } else{//Do nothing
             printToScreen("  This is not a valid option. Please try again.");   
@@ -604,7 +605,13 @@ public class StateHandler
         printToScreen("  Has this order been shipped? Y/N");
         boolean wasUpdated = yesno(getInput(1));
         if(wasUpdated){
-            //<execute updateOrderDate>
+            java.util.Date currentday = new java.util.Date();
+            Date date = new Date(currentday.getTime());
+            try{
+                database.updateOrderDate(date.toString(), receiptID);
+            }catch(Exception e){
+                printToScreen(e.getMessage());
+            }
         }else{
             printToScreen("  Order not updated");   
         }
@@ -757,13 +764,13 @@ public class StateHandler
         String in = getInput(1);
         //HEADER TRANSITIONS
 
-        if(in.toLowerCase().equals("s")){
+        if(in.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
-        }else if(in.toLowerCase().equals("v")){
+        }else if(in.equalsIgnoreCase("v")){
             return st.VIEWVSB;
-        }else if(in.toLowerCase().equals("q")){
+        }else if(in.equalsIgnoreCase("q")){
             return st.INITIAL;
-        }else if(in.toLowerCase().equals("x")){
+        }else if(in.equalsIgnoreCase("x")){
             return st.EXIT;
         }else{//Do nothing
             return st.CUSTSTART;
@@ -771,7 +778,7 @@ public class StateHandler
     }
     
     /**
-     * @author Curtis
+     * @author Curtis INCOMPLETE
      */
     public State SEARCHSTATE()
     {
@@ -831,7 +838,7 @@ public class StateHandler
     {
         printToScreen("  Please enter the UPC of the item that you wish to add or 's' if you want to search again.");
         String upc = getInput(12);
-        if(upc.toLowerCase().equals("s")){
+        if(upc.equalsIgnoreCase("s")){
             return st.SEARCHSTATE;
         }else{
             Item toSelect = searchByUPC(searchedItems, upc);
@@ -874,6 +881,7 @@ public class StateHandler
             }
             printToScreen("  Would you like to search for more items? Y/N");
             boolean moreItems  = yesno(getInput(1));
+            searchedItems.clear();
             if(!moreItems){
                 return st.CUSTSTART;
             }
@@ -896,11 +904,11 @@ public class StateHandler
             printToScreen("  If you would like to place an order for these items, please enter 'o'");
             printToScreen("  If you would like to continue searching for items, please enter 's'.");
             String choice = getInput(1);
-            if(choice.toLowerCase().equals("c")){
+            if(choice.equalsIgnoreCase("c")){
                 return st.CLEARVSB;
-            }else if(choice.toLowerCase().equals("o")){
+            }else if(choice.equalsIgnoreCase("o")){
                 return st.PLACEORDER;
-            }else if(choice.toLowerCase().equals("s")){
+            }else if(choice.equalsIgnoreCase("s")){
                 return st.SEARCHSTATE;
             }else{
                 printToScreen("  This is not a valid coice.");
@@ -956,6 +964,8 @@ public class StateHandler
      */
     public State CHECKQTYFINAL()
     {
+        ArrayList<Item> toRemove = new ArrayList<Item>(); 
+        //This is to prevent a concurrent modificatio nexception
         for(Item i : VSB){
             Item compare = null;
             try{
@@ -969,8 +979,22 @@ public class StateHandler
                 if(i.getStock() > compare.getStock()){
                     printToScreen("  There is no longer enough stock to complete your order for this item.");
                     printToScreen("  Please enter 'y' if you will accept " + compare.getStock() + " of the item");
+                    printToScreen("  Please enter 'n' if you would like to remove the item from the order.");
+                    boolean choice = yesno(getInput(1));
+                    if(choice){
+                        i.setStock(compare.getStock());
+                    }else{
+                        toRemove.add(i);
+                    }
                 }
                 
+            }
+        }
+        
+        //Remove the bad items from the order
+        if(!toRemove.isEmpty()){
+            for(Item i : toRemove){
+                VSB.remove(i);
             }
         }
         return null;
@@ -986,8 +1010,7 @@ public class StateHandler
         while(!validCard){
             printToScreen("  Please enter your credit card number.");
             cardnum = getInput(16);
-            //validate credit card is the right length, authentication
-            validCard = true;
+            validCard = ec.checkNumLength(cardnum, 16); //THIS IS A HACK!!!
             if(!validCard){
                 printToScreen("  This is not a valid credit card number.");
             }
@@ -1025,7 +1048,7 @@ public class StateHandler
         if(fconfirm){
             return st.RECEIPT;
         }else{
-            return st.ORDERFAIL;
+            return ORDERFAIL(1);
         }
     }
     
@@ -1034,15 +1057,18 @@ public class StateHandler
      */
     public State RECEIPT()
     {
-        //Generate the order for placement ionto the DB
+        //Generate order receipt number
         //Generate receiptID and expected date
         //Attempt to add to the database, set boolean successful
         boolean successful = true;
         if(successful){
             printToScreen("  Thank you for your order! Your order number is: " /*+ <receiptID>*/);
             printToScreen("  Your order will arrive in approximately " + /*<shipTime + */ " days");
+            VSB.clear();
+            orderItems.clear();
+            searchedItems.clear();
         }else{
-            return st.ORDERFAIL;
+            return ORDERFAIL(2);
         }
         return null; //dummy return, unreachable
     }
@@ -1057,7 +1083,9 @@ public class StateHandler
             printToScreen("  item in you basket to place an order");
             return st.CUSTSTART;
         }else if(failtype == 1){
-            
+            printToScreen("  The order has been cancelled successfully!");
+        }else if(failtype == 2){
+            printToScreen("  The database failed to receive your order.");
         }
         return null;
     }

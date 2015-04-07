@@ -8,9 +8,9 @@ public class ErrorChecker
     /**
      * Taken from http://stackoverflow.com/questions/5439529/determine-if-a-string-is-an-integer-in-java
      */
-    public static boolean checkPhoneNum(String s)
+    public static boolean checkNumLength(String s, int length)
     {
-        if(s.length() != 10){
+        if(s.length() != length){
             return false;
         }
         String[] snums = s.split("");
