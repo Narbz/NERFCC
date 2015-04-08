@@ -130,13 +130,13 @@ public class StateHandler
         String address = getInput(40);
         printToScreen("  Please enter your phone number(xxxxxxxxxx): ");
         String phonenum = getInput(10);
-        boolean validNum = ec.checkNumLength(phonenum, 10);
+        boolean validNum = Pattern.matches("[0-9]{10}", phonenum);//ec.checkNumLength(phonenum, 10);
         while(!validNum){
             printToScreen("  The phone number you enter is not a valid phone number.");  
             printToScreen("  A valid number consists of digits 0-9 i.e 1234567890.");  
             printToScreen("  Please re-enter your phone number: (xxxxxxxxxx)");
             phonenum = getInput(10);
-            validNum = ec.checkNumLength(phonenum, 10);
+            validNum = Pattern.matches("[0-9]{10}", phonenum);//ec.checkNumLength(phonenum, 10);
         }
         printToScreen("  Please enter your username that you will use to log in: ");
         boolean validUser = false;
