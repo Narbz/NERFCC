@@ -452,7 +452,7 @@ public class ams {
           return o;
       }
       
-      public static int selectRetunUpcExists(String upc) throws IOException, SQLException
+      public int selectRetunUpcExists(String upc) throws IOException, SQLException
       {
     	//HEADER
           Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");

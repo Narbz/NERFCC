@@ -429,9 +429,17 @@ public class StateHandler
         printToScreen("  Please enter the UPC of the item you would like to add to stock: ");
         String upc = getInput(12);
         State headerAct = headerActions(upc);
+        boolean validUPC = Pattern.matches("[0-9]{12}", upc);
         if(headerAct != null) {
         	return headerAct;
         }
+        while(!validUPC)
+        {
+        	printToScreen("  Invalid upc entered.  Please re-enter the upc as 16 digits: ");
+        	upc = getInput(12);
+        	validUPC = Pattern.matches("[0-9]{12}", upc);
+        }
+        
         itemToAdd = null;
         try{
             itemToAdd = database.selectItemByUpc(upc);
@@ -469,7 +477,7 @@ public class StateHandler
             	price = getInput(12);//ec.getPrice(getInput(12));
                 boolean validPrice = Pattern.matches("[0-9]+[.][0-9]{2}", price);
                 while(!validPrice){
-                	printToScreen("  The price ou entered is invaild. Please enter a new price in form x.xx");
+                	printToScreen("  The price you entered is invaild. Please enter a new price in form x.xx");
                     price = getInput(12);//ec.getPrice(getInput(12));
                     validPrice = Pattern.matches("[0-9]+[.][0-9]{2}", price);
                 }
@@ -679,7 +687,7 @@ public class StateHandler
                 }else{
                     printToScreen("  Error: the item was not added to the database");
                 }
-                printToScreen("  Would you like to add more items?Y/N");
+                printToScreen("  Would you like to add more items? Y/N");
                 in = getInput(1);
                 headerAct = headerActions(in);
                 if(headerAct != null) {
@@ -689,7 +697,10 @@ public class StateHandler
                 if(!moreItems){
                     return st.MGRSTART;
                 }
-                
+                if(moreItems)
+                {
+                	return st.ADDITEMS;
+                }
             
             }//else do nothing and cycle back     
             return st.MGRSTART;
@@ -815,7 +826,7 @@ public class StateHandler
             }
             printToScreen(" -----------------------------------");
             printToScreen("  Total Quantity Sold:  " + dsp.get(dsp.size()-1).getSold());
-            printToScreen("  Total :  $" + dsp.get(dsp.size()-1).getTotal());
+            printToScreen("  Total :  $" + Math.round(dsp.get(dsp.size()-1).getTotal()*100.0)/100.0);
             printToScreen("  Press enter when you are finished.");
             String dummy = getInput();
             return st.MGRSTART;
@@ -904,7 +915,7 @@ public class StateHandler
      */
     public State NTSRSUCCESS()
     {
-        printToScreen("  Please press enter/preturn to continue.");
+        printToScreen("  Please press enter to continue.");
         String dummy = getInput();
         return st.MGRSTART;
     }
