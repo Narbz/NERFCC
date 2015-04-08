@@ -10,8 +10,8 @@ import org.apache.ibatis.io.Resources;
 public class ams {
 
 	
-      // public static void main(String[] args)
-      //         throws IOException,SQLException{
+       //public static void main(String[] args)
+       //        throws IOException,SQLException{
            //Bind the configuration file with a newly built sql session object
            //Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
            //SqlSessionFactory smc =  new SqlSessionFactoryBuilder().build(rd);
@@ -45,10 +45,10 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           //System.out.print();
+           //System.out.print(selectRetunUpcExists("345678912345"));
     	   //updateItemStock("123456789123", "40");
     	   //session.close();
-     // }
+      //}
 	
 	/***************************************Select Statements **********************/
     
@@ -452,6 +452,25 @@ public class ams {
           return o;
       }
       
+      public static int selectRetunUpcExists(String upc) throws IOException, SQLException
+      {
+    	//HEADER
+          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+          SqlSession session = smc.openSession();
+          //END HEADER
+    	  int exists = 0;
+    	  
+    	  exists =  session.selectOne("ams.selectRetunUpcExists", upc);
+    	  
+    	  //FOOTER
+          session.commit();
+          session.close();
+          //END FOOTER
+          
+          return exists;
+      }
+      
     //************************INSERT STATEMENTS*******************************
     /**
     * 
@@ -651,7 +670,7 @@ public class ams {
         //QUERY TO EXECUTE
         //Order order = session.select
         Map<String, String> map = new HashMap<String, String>();
-  	  	map.put("date", userDate);
+  	  	map.put("deliveredDate", userDate);
   	  	map.put("receiptId", receiptId);
         int success = session.update("ams.updateOrderDate", map);
         //FOOTER
@@ -665,7 +684,7 @@ public class ams {
     /**
      * @author Narbeh
      */
-    public int updateItemStockAndPrice(String upc, String qtyToAdd, double price) throws IOException, SQLException
+    public int updateItemStockAndPrice(String upc, String stock, double price) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
@@ -676,9 +695,9 @@ public class ams {
         //QUERY TO EXECUTE
         //Item item = session.select
         Map<String, Object> map = new HashMap<String, Object>();
-  	  	map.put("upc", upc);
+  	  	map.put("stock", stock);
   	  	map.put("price", price);
-  	  	map.put("stock", qtyToAdd);
+  	  	map.put("upc", upc);
         int success = session.update("ams.updateItemStockAndPrice", map);
         //FOOTER
         session.commit();

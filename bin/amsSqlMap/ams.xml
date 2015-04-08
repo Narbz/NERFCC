@@ -270,6 +270,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	WHERE receiptId = #{receiptId}
 </select>
 
+<select id="selectRetunUpcExists" resultType = "int">
+	SELECT count(*)
+	FROM ReturnItem
+	WHERE upc = #{upc}
+</select>
+
 <!--Update Statements-->
 <update id="updateItemStock">
 	UPDATE Item

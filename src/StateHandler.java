@@ -257,7 +257,7 @@ public class StateHandler
                 allItems = true;
             }else{
                 while(ec.getUPC(in) == null){
-                    printToScreen("  Please enter a valid UPC.");
+                    printToScreen("  Please enter a valid UPC.");//TODO:need to use the new selection via upc to verify that a upc exits
                     in = ec.getUPC(getInput(12));
                 }
                 PurchaseItem toReturn = null;
@@ -350,6 +350,7 @@ public class StateHandler
     
     /**
      * @author Curtis, Chazz
+     * TODO: incomplete
      */
     public State RETURNCONFIRM()
     {
@@ -615,9 +616,10 @@ public class StateHandler
                         if(headerAct != null) {
                         	return headerAct;
                         }
-                        if(!songs.contains(nextSong)){
+                        if(songs.contains(nextSong)){
                             printToScreen("  This song has already been added to the song list");
                         }else{
+                        	printToScreen("  The song was added to the song list");
                             songs.add(nextSong);
                         }
                         printToScreen("  Are there any more songs that you would like to add? Y/N");
@@ -717,10 +719,18 @@ public class StateHandler
         	String expectedPattern = "yyyy-MM-dd";
             SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
             java.util.Date currentday = new java.util.Date();
-            String date = formatter.format(currentday);
+            String date = formatter.format(currentday.getTime());
            // Date date  = formatter.parse(currentday);//new Date(currentday.getTime());
             try{
-                database.updateOrderDate(date, receiptID);
+                int didUpdate = database.updateOrderDate(date, receiptID);
+                if(didUpdate > 0)
+                {
+                	printToScreen("  Order updated!");   
+                }
+                else
+                {
+                	printToScreen("  Unable to update Order");   
+                }
             }catch(Exception e){
                 printToScreen(e.getMessage());
             }
