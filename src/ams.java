@@ -45,10 +45,10 @@ public class ams {
            
            //commit to the insertion
            //session.commit();
-           //System.out.print(selectRetunUpcExists("345678912345"));
+           //System.out.print(selectRetunUpcExists("123456789123", "7"));
     	   //updateItemStock("123456789123", "40");
     	   //session.close();
-      //}
+    // }
 	
 	/***************************************Select Statements **********************/
     
@@ -452,24 +452,23 @@ public class ams {
           return o;
       }
       
-      public int selectRetunUpcExists(String upc) throws IOException, SQLException
-      {
-    	//HEADER
-          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
-          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
-          SqlSession session = smc.openSession();
-          //END HEADER
-    	  int exists = 0;
-    	  
-    	  exists =  session.selectOne("ams.selectRetunUpcExists", upc);
-    	  
-    	  //FOOTER
-          session.commit();
-          session.close();
-          //END FOOTER
-          
-          return exists;
-      }
+//      public static int selectRetunUpcExists(String upc) throws IOException, SQLException
+//      {
+//    	//HEADER
+//          Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
+//          SqlSessionFactory smc = new SqlSessionFactoryBuilder().build(rd);
+//          SqlSession session = smc.openSession();
+//          //END HEADER
+//    	  int exists = 0;
+//    	  exists =  session.selectOne("ams.selectRetunUpcExists", upc);
+//    	  
+//    	  //FOOTER
+//          session.commit();
+//          session.close();
+//          //END FOOTER
+//          
+//          return exists;
+//      }
       
     //************************INSERT STATEMENTS*******************************
     /**
