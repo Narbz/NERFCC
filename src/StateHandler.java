@@ -226,7 +226,7 @@ public class StateHandler
         if(canReturn == 1){
             printToScreen("  The items for this receipt number can be returned.");
             printToScreen("  Here are the items on the receipt:");
-            printReturnItems(retItems);
+           // printReturnItems(retItems);
             return st.RETURNITEMS;
         }else if(canReturn == 0){
             printToScreen("  The items in this receipt cannot be returned because");
