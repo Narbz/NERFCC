@@ -634,7 +634,7 @@ public class ams {
     /**
      * @author Narbeh
      */
-    public int updateItemStock(String upc, String qtyToAdd) throws IOException, SQLException
+    public int updateItemStock(String upc, int qtyToAdd) throws IOException, SQLException
     {
         //HEADER
         Reader rd = Resources.getResourceAsReader("amsSqlMap/amsConfig.xml");
