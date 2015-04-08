@@ -256,26 +256,15 @@ public class StateHandler
             if(in.equalsIgnoreCase("d")){
                 allItems = true;
             }else{
-            	int upcExists = 0;
-                while(upcExists == 0){
-                    printToScreen("  Please enter a valid UPC.");//TODO:need to use the new selection via upc to verify that a upc exits
-                    in = ec.getUPC(getInput(12));
-                    try {
-						upcExists = database.selectRetunUpcExists(in);
-					} catch (IOException e) {
-						e.printStackTrace();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-                }
                 PurchaseItem toReturn = null;
                 while(toReturn == null){
-                    /*toReturn = searchUPC(orderItems, in);*/
+                    
                     for(int i = 0; i < orderItems.size(); i++){
                         if(in.equals(orderItems.get(i).getUPC())){
                             toReturn = orderItems.get(i);
                         }
                     }
+                    in = ec.getUPC(getInput(12));
                 }
             
             
