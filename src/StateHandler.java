@@ -256,9 +256,17 @@ public class StateHandler
             if(in.equalsIgnoreCase("d")){
                 allItems = true;
             }else{
-                while(ec.getUPC(in) == null){
+            	int upcExists = 0;
+                while(upcExists == 0){
                     printToScreen("  Please enter a valid UPC.");//TODO:need to use the new selection via upc to verify that a upc exits
                     in = ec.getUPC(getInput(12));
+                    try {
+						upcExists = database.selectRetunUpcExists(in);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
                 }
                 PurchaseItem toReturn = null;
                 while(toReturn == null){
@@ -323,11 +331,11 @@ public class StateHandler
             
                 int receiptId = toReturn.getReceiptId();
                 
-                java.sql.Date currentday = (java.sql.Date) new Date();
-                //Date date = new Date(currentday.getTime());
+                java.util.Date currentday = new java.util.Date();
+                java.sql.Date date = new java.sql.Date(currentday.getTime());
                 
                 try {
-                    Return ret = new Return(retItems.get(0).getRetid() , receiptId , currentday);
+                    Return ret = new Return(retItems.get(0).getRetid() , receiptId , date);
                     database.insertReturn(ret);
                     for(int j = 0; j < retItems.size(); j++){
                         database.insertReturnItem(retItems.get(j));
@@ -355,15 +363,26 @@ public class StateHandler
     public State RETURNCONFIRM()
     {
         printToScreen("  Attempting to process the return for the given items!");
-        //<add items to return, returnItem table, increase quantity>
         boolean success = true;//above
         if(success){
             printToScreen("  The return order has been processed successfully.");
-            //<calculate amount to return>
-            printToScreen("  <amount> has been refunded to the Customer");
+            float amountReturned = 0;
+            for(int i = 0; i < retItems.size(); i++){
+            	Item item;
+				try {
+					item = database.selectItemByUpc(retItems.get(i).getUpc());
+					amountReturned += item.getPrice();
+					database.updateItemStock(item.getUpc(), item.getStock() + retItems.get(i).getQuantity());
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+            }
+            printToScreen("  "+amountReturned+" has been refunded to the Customer");
         }else{
             printToScreen("  The database has failed to process the return order."); 
-            //Print the amo
+
         }
         return st.CLERKSTART;
     }
@@ -463,7 +482,7 @@ public class StateHandler
                 	}
                 else
                 {
-                	isSuccessful = database.updateItemStock(itemToAdd.getUpc(), Integer.toString(itemToAdd.getStock()));
+                	isSuccessful = database.updateItemStock(itemToAdd.getUpc(), itemToAdd.getStock());
                 }
                 successful = (isSuccessful > 0) ? true:false;
             }catch(Exception e){
